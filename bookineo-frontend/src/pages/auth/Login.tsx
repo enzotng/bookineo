@@ -1,8 +1,9 @@
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/card";
-import { Button } from "../../components/button";
-import { Input } from "../../components/input";
-import { Label } from "../../components/label";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login: React.FC = () => {
@@ -43,9 +44,9 @@ const Login: React.FC = () => {
 
                     <div className="text-center text-sm">
                         <span className="text-gray-600">Pas encore de compte ? </span>
-                        <a href="/auth/register" className="text-blue-600 hover:underline">
+                        <Link to="/auth/register" className="text-blue-600 hover:underline">
                             Créer un compte
-                        </a>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>
