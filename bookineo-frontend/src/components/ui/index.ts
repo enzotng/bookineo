@@ -5,7 +5,6 @@ export * from "./label";
 export * from "./avatar";
 export * from "./dialog";
 export * from "./badge";
-export * from "./scroll-area";
 export * from "./separator";
 export * from "./select";
 export * from "./sheet";
