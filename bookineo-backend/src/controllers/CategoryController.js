@@ -1,4 +1,4 @@
-import { query as db } from "../database/connection";
+import { query } from "../database/connection.js";
 
 class CategoryController {
   async createCategory(req, res) {
@@ -9,7 +9,7 @@ class CategoryController {
         return res.status(400).json({ error: "Le nom de la catégorie est obligatoire" });
       }
 
-      const result = await db.query(
+      const result = await query(
         `INSERT INTO categories (name) VALUES ($1) RETURNING *`,
         [name]
       );
@@ -22,9 +22,10 @@ class CategoryController {
 
   async getCategories(req, res) {
     try {
-      const result = await db.query(`SELECT * FROM categories ORDER BY name`);
+      const result = await query(`SELECT * FROM categories ORDER BY name`);
       res.json(result.rows);
     } catch (error) {
+      console.error("CategoryController error:", error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -38,7 +39,7 @@ class CategoryController {
         return res.status(400).json({ error: "Le nom de la catégorie est obligatoire" });
       }
 
-      const result = await db.query(
+      const result = await query(
         `UPDATE categories 
          SET name = $1, updated_at = NOW()
          WHERE id = $2 RETURNING *`,
@@ -59,7 +60,7 @@ class CategoryController {
     try {
       const { id } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `DELETE FROM categories WHERE id = $1 RETURNING *`,
         [id]
       );

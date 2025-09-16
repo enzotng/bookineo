@@ -1,4 +1,4 @@
-import { query as db } from "../database/connection";
+import { query } from "../database/connection.js";
 
 class BookController {
     async createBook(req, res) {
@@ -9,7 +9,7 @@ class BookController {
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
-            const result = await db.query(
+            const result = await query(
                 `INSERT INTO books (title, author, publication_year, category_id, price, owner_id, image_url) 
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
                 [title, author, publication_year, category_id, price, owner_id, image_url]
@@ -25,28 +25,28 @@ class BookController {
         try {
             const { status, category_id, author, title } = req.query;
 
-            let query = "SELECT * FROM books WHERE 1=1";
+            let queryText = "SELECT * FROM books WHERE 1=1";
             const params = [];
             let index = 1;
 
             if (status) {
-                query += ` AND status = $${index++}`;
+                queryText += ` AND status = $${index++}`;
                 params.push(status);
             }
             if (category_id) {
-                query += ` AND category_id = $${index++}`;
+                queryText += ` AND category_id = $${index++}`;
                 params.push(category_id);
             }
             if (author) {
-                query += ` AND author ILIKE $${index++}`;
+                queryText += ` AND author ILIKE $${index++}`;
                 params.push(`%${author}%`);
             }
             if (title) {
-                query += ` AND title ILIKE $${index++}`;
+                queryText += ` AND title ILIKE $${index++}`;
                 params.push(`%${title}%`);
             }
 
-            const result = await db.query(query, params);
+            const result = await query(queryText, params);
             res.json(result.rows);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -57,7 +57,7 @@ class BookController {
         try {
             const { id } = req.params;
 
-            const result = await db.query("SELECT * FROM books WHERE id = $1", [id]);
+            const result = await query("SELECT * FROM books WHERE id = $1", [id]);
 
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: "Livre non trouvé" });
@@ -74,7 +74,7 @@ class BookController {
             const { id } = req.params;
             const { title, author, publication_year, category_id, price, status, image_url } = req.body;
 
-            const result = await db.query(
+            const result = await query(
                 `UPDATE books 
          SET title = COALESCE($1, title),
              author = COALESCE($2, author),
@@ -102,7 +102,7 @@ class BookController {
         try {
             const { id } = req.params;
 
-            const result = await db.query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
+            const result = await query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
 
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: "Livre non trouvé" });

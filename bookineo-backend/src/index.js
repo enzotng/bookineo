@@ -1,3 +1,3 @@
-export * from "./routes";
-export * from "./database/connection";
-export * as controllers from "./controllers";
+export * from "./routes/index.js";
+export * from "./database/connection.js";
+export * as controllers from "./controllers/index.js";

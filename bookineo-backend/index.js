@@ -2,22 +2,16 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { connectDB, userRoutes, bookRoutes, categoryRoutes, rentalRoutes, messageRoutes, chatRoutes } from "./src";
+import { connectDB, userRoutes, bookRoutes, categoryRoutes, rentalRoutes, messageRoutes, chatRoutes } from "./src/index.js";
+import swaggerUi from "swagger-ui-express";
+import fs from "fs";
+import yaml from "yaml";
 
 dotenv.config();
 
-const userRoutes = require("./routes/userRoutes");
-const bookRoutes = require("./routes/bookRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const rentalRoutes = require("./routes/rentalRoutes");
-const messageRoutes = require("./routes/messageRoutes");
-
-const swaggerUi = require("swagger-ui-express");
-const fs = require("fs");
-const yaml = require("yaml");
-
 const baseYaml = fs.readFileSync("./openapi-base.yaml", "utf8");
 const openapiDoc = yaml.parse(baseYaml);
+
 
 const app = express();
 
@@ -36,10 +30,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/rentals", rentalRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDoc));
-
-app.get("/", (req, res) => {
-    res.send("Welcome to the API");
-});
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.originalUrl });

@@ -1,4 +1,4 @@
-import { query as db } from "../database/connection";
+import { query } from "../database/connection.js";
 
 class MessageController {
   async sendMessage(req, res) {
@@ -9,7 +9,7 @@ class MessageController {
         return res.status(400).json({ error: "Champs obligatoires manquants" });
       }
 
-      const result = await db.query(
+      const result = await query(
         `INSERT INTO messages (sender_id, recipient_id, subject, content)
          VALUES ($1, $2, $3, $4) RETURNING *`,
         [sender_id, recipient_id, subject, content]
@@ -25,7 +25,7 @@ class MessageController {
     try {
       const { userId } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT * FROM messages
          WHERE sender_id = $1 OR recipient_id = $1
          ORDER BY sent_at DESC`,
@@ -42,7 +42,7 @@ class MessageController {
     try {
       const { id } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT * FROM messages WHERE id = $1`,
         [id]
       );
@@ -52,7 +52,7 @@ class MessageController {
       }
 
       if (!result.rows[0].is_read) {
-        await db.query(
+        await query(
           `UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`,
           [id]
         );
@@ -68,7 +68,7 @@ class MessageController {
     try {
       const { id } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `DELETE FROM messages WHERE id = $1 RETURNING *`,
         [id]
       );
@@ -87,7 +87,7 @@ class MessageController {
     try {
       const { userId } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT COUNT(*) AS unread_count
          FROM messages
          WHERE recipient_id = $1 AND is_read = false`,

@@ -1,4 +1,4 @@
-import { query as db } from "../database/connection";
+import { query } from "../database/connection.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -11,14 +11,14 @@ class UserController {
                 return res.status(400).json({ error: "Email et mot de passe obligatoires" });
             }
 
-            const existingUser = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+            const existingUser = await query("SELECT * FROM users WHERE email = $1", [email]);
             if (existingUser.rows.length > 0) {
                 return res.status(400).json({ error: "Email déjà utilisé" });
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            const result = await db.query(
+            const result = await query(
                 `INSERT INTO users (email, password, first_name, last_name, birth_date)
          VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, birth_date`,
                 [email, hashedPassword, first_name, last_name, birth_date || null]
@@ -38,7 +38,7 @@ class UserController {
                 return res.status(400).json({ error: "Email et mot de passe obligatoires" });
             }
 
-            const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+            const user = await query("SELECT * FROM users WHERE email = $1", [email]);
             if (user.rows.length === 0) {
                 return res.status(400).json({ error: "Email ou mot de passe incorrect" });
             }
@@ -59,7 +59,7 @@ class UserController {
     async getProfile(req, res) {
         try {
             const userId = req.user.id;
-            const user = await db.query("SELECT id, email, first_name, last_name, birth_date FROM users WHERE id = $1", [userId]);
+            const user = await query("SELECT id, email, first_name, last_name, birth_date FROM users WHERE id = $1", [userId]);
             res.json(user.rows[0]);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -71,7 +71,7 @@ class UserController {
             const userId = req.user.id;
             const { first_name, last_name, birth_date } = req.body;
 
-            const result = await db.query(
+            const result = await query(
                 `UPDATE users SET first_name = $1, last_name = $2, birth_date = $3, updated_at = NOW()
          WHERE id = $4 RETURNING id, email, first_name, last_name, birth_date`,
                 [first_name, last_name, birth_date, userId]
@@ -87,7 +87,7 @@ class UserController {
         try {
             const userId = req.user.id;
 
-            await db.query("DELETE FROM users WHERE id = $1", [userId]);
+            await query("DELETE FROM users WHERE id = $1", [userId]);
             res.json({ message: "Utilisateur supprimé" });
         } catch (error) {
             res.status(500).json({ error: error.message });

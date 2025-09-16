@@ -1,5 +1,5 @@
 import express from "express";
-import lmStudio from "../services/lmStudio";
+import lmStudio from "../services/lmStudio.js";
 
 const router = express.Router();
 

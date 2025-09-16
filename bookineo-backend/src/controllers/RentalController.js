@@ -1,4 +1,4 @@
-import { query as db } from "../database/connection";
+import { query } from "../database/connection.js";
 
 class RentalController {
     async rentBook(req, res) {
@@ -9,7 +9,7 @@ class RentalController {
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
-            const bookCheck = await db.query(`SELECT * FROM books WHERE id = $1`, [book_id]);
+            const bookCheck = await query(`SELECT * FROM books WHERE id = $1`, [book_id]);
 
             if (bookCheck.rows.length === 0) {
                 return res.status(404).json({ error: "Livre non trouvé" });
@@ -19,13 +19,13 @@ class RentalController {
                 return res.status(400).json({ error: "Livre non disponible" });
             }
 
-            const rental = await db.query(
+            const rental = await query(
                 `INSERT INTO rentals (book_id, renter_id, rental_date, expected_return_date, status)
          VALUES ($1, $2, $3, $4, 'active') RETURNING *`,
                 [book_id, renter_id, rental_date, expected_return_date]
             );
 
-            await db.query(`UPDATE books SET status = 'rented', updated_at = NOW() WHERE id = $1`, [book_id]);
+            await query(`UPDATE books SET status = 'rented', updated_at = NOW() WHERE id = $1`, [book_id]);
 
             res.status(201).json(rental.rows[0]);
         } catch (error) {
@@ -41,7 +41,7 @@ class RentalController {
                 return res.status(400).json({ error: "Champs obligatoires manquants" });
             }
 
-            const rentalCheck = await db.query(`SELECT * FROM rentals WHERE id = $1`, [rental_id]);
+            const rentalCheck = await query(`SELECT * FROM rentals WHERE id = $1`, [rental_id]);
 
             if (rentalCheck.rows.length === 0) {
                 return res.status(404).json({ error: "Location non trouvée" });
@@ -49,14 +49,14 @@ class RentalController {
 
             const rental = rentalCheck.rows[0];
 
-            await db.query(
+            await query(
                 `UPDATE rentals
          SET actual_return_date = $1, status = 'returned', comment = $2, updated_at = NOW()
          WHERE id = $3`,
                 [actual_return_date, comment || null, rental_id]
             );
 
-            await db.query(`UPDATE books SET status = 'available', updated_at = NOW() WHERE id = $1`, [rental.book_id]);
+            await query(`UPDATE books SET status = 'available', updated_at = NOW() WHERE id = $1`, [rental.book_id]);
 
             res.json({ message: "Livre restitué avec succès" });
         } catch (error) {
@@ -66,7 +66,7 @@ class RentalController {
 
     async getRentals(req, res) {
         try {
-            const rentals = await db.query(
+            const rentals = await query(
                 `SELECT r.*, b.title, u.first_name, u.last_name
          FROM rentals r
          JOIN books b ON r.book_id = b.id
@@ -84,7 +84,7 @@ class RentalController {
         try {
             const { userId } = req.params;
 
-            const rentals = await db.query(
+            const rentals = await query(
                 `SELECT r.*, b.title
          FROM rentals r
          JOIN books b ON r.book_id = b.id
