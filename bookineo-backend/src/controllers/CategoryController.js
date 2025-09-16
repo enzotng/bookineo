@@ -1,8 +1,6 @@
-// controllers/CategoryController.js
-const db = require("../config/db");
+import { query as db } from "../database/connection";
 
 class CategoryController {
-  // ➕ Ajouter une catégorie
   async createCategory(req, res) {
     try {
       const { name } = req.body;
@@ -22,7 +20,6 @@ class CategoryController {
     }
   }
 
-  // 📋 Lister toutes les catégories
   async getCategories(req, res) {
     try {
       const result = await db.query(`SELECT * FROM categories ORDER BY name`);
@@ -32,7 +29,6 @@ class CategoryController {
     }
   }
 
-  // ✏️ Modifier une catégorie
   async updateCategory(req, res) {
     try {
       const { id } = req.params;
@@ -59,7 +55,6 @@ class CategoryController {
     }
   }
 
-  // 🗑️ Supprimer une catégorie
   async deleteCategory(req, res) {
     try {
       const { id } = req.params;
@@ -80,4 +75,4 @@ class CategoryController {
   }
 }
 
-module.exports = new CategoryController();
+export default new CategoryController();

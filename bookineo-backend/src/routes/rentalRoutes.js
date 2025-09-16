@@ -1,12 +1,11 @@
-// routes/rentalRoutes.js
-const express = require("express");
+import express from "express";
+import { rentalController } from "../controllers";
+
 const router = express.Router();
-const RentalController = require("../controllers/RentalController");
 
-// Gestion des locations
-router.post("/rent", RentalController.rentBook);
-router.post("/return", RentalController.returnBook);
-router.get("/", RentalController.getRentals);
-router.get("/user/:id", RentalController.getRentalByUser);
+router.post("/rent", rentalController.rentBook);
+router.post("/return", rentalController.returnBook);
+router.get("/", rentalController.getRentals);
+router.get("/user/:id", rentalController.getRentalByUser);
 
-module.exports = router;
+export default router;

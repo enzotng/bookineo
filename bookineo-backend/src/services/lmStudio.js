@@ -43,4 +43,4 @@ class LMStudioService {
     }
 }
 
-module.exports = new LMStudioService();
+export default new LMStudioService();
