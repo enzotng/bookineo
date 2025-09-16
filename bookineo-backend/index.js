@@ -1,8 +1,10 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const { connectDB } = require("./src/database/connection");
+import dotenv from "dotenv";
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { connectDB, userRoutes, bookRoutes, categoryRoutes, rentalRoutes, messageRoutes, chatRoutes } from "./src";
+
+dotenv.config();
 
 // Import des routes
 const userRoutes = require("./routes/userRoutes");
@@ -18,8 +20,16 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-const chatRoutes = require("./src/routes/chat");
-app.use("/api", chatRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/rentals", rentalRoutes);
+app.use("/api/messages", messageRoutes);
+
+app.get("/", (req, res) => {
+    res.send("Welcome to the API");
+});
 
 // Routes principales
 app.use("/api/users", userRoutes);

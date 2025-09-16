@@ -1,8 +1,6 @@
-// controllers/MessageController.js
-const db = require("../config/db");
+import { query as db } from "../database/connection";
 
 class MessageController {
-  // ➕ Envoyer un message
   async sendMessage(req, res) {
     try {
       const { sender_id, recipient_id, subject, content } = req.body;
@@ -23,7 +21,6 @@ class MessageController {
     }
   }
 
-  // 📋 Récupérer tous les messages d'un utilisateur
   async getMessages(req, res) {
     try {
       const { userId } = req.params;
@@ -41,7 +38,6 @@ class MessageController {
     }
   }
 
-  // ✉️ Lire un message précis
   async getMessageById(req, res) {
     try {
       const { id } = req.params;
@@ -55,7 +51,6 @@ class MessageController {
         return res.status(404).json({ error: "Message non trouvé" });
       }
 
-      // Marquer le message comme lu
       if (!result.rows[0].is_read) {
         await db.query(
           `UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`,
@@ -69,7 +64,6 @@ class MessageController {
     }
   }
 
-  // 🗑️ Supprimer un message
   async deleteMessage(req, res) {
     try {
       const { id } = req.params;
@@ -89,7 +83,6 @@ class MessageController {
     }
   }
 
-  // 🔢 Compter les messages non lus pour un utilisateur
   async getUnreadCount(req, res) {
     try {
       const { userId } = req.params;
@@ -108,4 +101,4 @@ class MessageController {
   }
 }
 
-module.exports = new MessageController();
+export default new MessageController();

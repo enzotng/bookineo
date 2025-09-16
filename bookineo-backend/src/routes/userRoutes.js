@@ -1,15 +1,13 @@
-// routes/userRoutes.js
-const express = require("express");
+import express from "express";
+import { userControllers } from "../controllers";
+
 const router = express.Router();
-const UserController = require("../controllers/UserController");
 
-// Auth
-router.post("/register", UserController.register);
-router.post("/login", UserController.login);
+router.post("/register", userControllers.register);
+router.post("/login", userControllers.login);
 
-// Profil
-router.get("/profile/:id", UserController.getProfile);
-router.put("/profile/:id", UserController.updateProfile);
-router.delete("/:id", UserController.deleteUser);
+router.get("/profile/:id", userControllers.getProfile);
+router.put("/profile/:id", userControllers.updateProfile);
+router.delete("/:id", userControllers.deleteUser);
 
-module.exports = router;
+export default router;
