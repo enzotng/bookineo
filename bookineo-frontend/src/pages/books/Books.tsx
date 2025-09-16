@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { booksAPI } from "../../api/books";
 import type { Book, Category, BookFilters, PaginationInfo } from "../../types/book";
-import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Input, Label, Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../components/ui";
+import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Input, Label, Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Skeleton, Spinner } from "../../components/ui";
 const Books: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -99,29 +99,25 @@ const Books: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Chargement des livres...</div>
-                </div>
+            <div className="flex flex-col justify-center items-center h-[calc(100vh-5rem)] gap-4">
+                <Spinner size="md" />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-center">
-                        <div className="text-red-500 mb-4">Erreur: {error}</div>
-                        <Button onClick={() => loadBooksAndCategories(filters)}>Réessayer</Button>
-                    </div>
+            <div className="flex justify-center items-center h-64">
+                <div className="text-center">
+                    <div className="text-red-500 mb-4">Erreur: {error}</div>
+                    <Button onClick={() => loadBooksAndCategories(filters)}>Réessayer</Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-6">
+        <div>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-6">Catalogue des livres</h1>
 
@@ -212,14 +208,21 @@ const Books: React.FC = () => {
                         <Card key={book.id} className="hover:shadow-md transition-shadow">
                             <CardHeader className="pb-4">
                                 {book.image_url && (
-                                    <div className="aspect-[3/4] mb-4 bg-gray-100 rounded-md overflow-hidden">
+                                    <div className="aspect-[3/4] bg-gray-100 rounded-md overflow-hidden relative h-56 w-full">
+                                        <Skeleton className="absolute inset-0 w-full h-full" />
                                         <img
                                             src={book.image_url}
                                             alt={book.title}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover relative z-10"
                                             loading="lazy"
+                                            onLoad={(e) => {
+                                                const skeleton = e.currentTarget.previousElementSibling;
+                                                if (skeleton) skeleton.style.display = "none";
+                                            }}
                                             onError={(e) => {
                                                 e.currentTarget.style.display = "none";
+                                                const skeleton = e.currentTarget.previousElementSibling;
+                                                if (skeleton) skeleton.style.display = "none";
                                             }}
                                         />
                                     </div>

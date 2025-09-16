@@ -24,7 +24,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button size="lg" className="fixed bottom-4 right-4 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button size="lg" className="z-30 fixed bottom-4 right-4 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300">
                     <MessageCircle className="w-6 h-6" />
                 </Button>
             </DialogTrigger>

@@ -1,6 +1,5 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui";
-import { Layout } from "../components/layout";
 import { Search, Plus, Filter, Download, Eye } from "lucide-react";
 
 interface Book {
@@ -94,9 +93,7 @@ const Home: React.FC = () => {
     };
 
     return (
-        <Layout>
-            <div className="space-y-6">
-            {/* Header */}
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Catalogue de livres</h1>
@@ -114,7 +111,6 @@ const Home: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filtres et Recherche */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -217,8 +213,7 @@ const Home: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
-            </div>
-        </Layout>
+        </div>
     );
 };
 

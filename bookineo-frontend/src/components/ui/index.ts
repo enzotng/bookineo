@@ -10,3 +10,5 @@ export * from "./select";
 export * from "./sheet";
 export * from "./tooltip";
 export * from "./pagination";
+export * from "./skeleton";
+export * from "./spinner";
