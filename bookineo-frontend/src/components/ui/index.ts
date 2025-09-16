@@ -9,3 +9,4 @@ export * from "./separator";
 export * from "./select";
 export * from "./sheet";
 export * from "./tooltip";
+export * from "./pagination";
