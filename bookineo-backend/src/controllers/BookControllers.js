@@ -23,31 +23,55 @@ class BookController {
 
     async getBooks(req, res) {
         try {
-            const { status, category_id, author, title } = req.query;
+            const { status, category_id, author, title, page = 1, limit = 12 } = req.query;
 
-            let queryText = "SELECT * FROM books WHERE 1=1";
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+
+            let whereClause = "WHERE 1=1";
             const params = [];
             let index = 1;
 
             if (status) {
-                queryText += ` AND status = $${index++}`;
+                whereClause += ` AND status = $${index++}`;
                 params.push(status);
             }
             if (category_id) {
-                queryText += ` AND category_id = $${index++}`;
+                whereClause += ` AND category_id = $${index++}`;
                 params.push(category_id);
             }
             if (author) {
-                queryText += ` AND author ILIKE $${index++}`;
+                whereClause += ` AND author ILIKE $${index++}`;
                 params.push(`%${author}%`);
             }
             if (title) {
-                queryText += ` AND title ILIKE $${index++}`;
+                whereClause += ` AND title ILIKE $${index++}`;
                 params.push(`%${title}%`);
             }
 
-            const result = await query(queryText, params);
-            res.json(result.rows);
+            const countQuery = `SELECT COUNT(*) FROM books ${whereClause}`;
+            const booksQuery = `SELECT * FROM books ${whereClause} ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index}`;
+
+            params.push(parseInt(limit), offset);
+
+            const [countResult, booksResult] = await Promise.all([
+                query(countQuery, params.slice(0, -2)),
+                query(booksQuery, params)
+            ]);
+
+            const totalBooks = parseInt(countResult.rows[0].count);
+            const totalPages = Math.ceil(totalBooks / parseInt(limit));
+
+            res.json({
+                books: booksResult.rows,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalBooks,
+                    limit: parseInt(limit),
+                    hasNextPage: parseInt(page) < totalPages,
+                    hasPreviousPage: parseInt(page) > 1
+                }
+            });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
