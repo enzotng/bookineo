@@ -2,6 +2,7 @@ export interface Book {
     id: string;
     title: string;
     author: string;
+    isbn: string;
     publication_year?: number;
     category_id?: number;
     price: number;
@@ -49,6 +50,7 @@ export interface BooksResponse {
 export interface CreateBookRequest {
     title: string;
     author: string;
+    isbn: string;
     publication_year?: number;
     category_id?: number;
     price: number;

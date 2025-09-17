@@ -1,7 +1,30 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { booksAPI } from "../../api/books";
 import type { Book, Category, BookFilters, PaginationInfo } from "../../types/book";
-import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Input, Label, Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Skeleton, Spinner } from "../../components/ui";
+import {
+    Button,
+    Badge,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    Input,
+    Label,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    Skeleton,
+    Spinner,
+} from "../../components/ui";
 const Books: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -96,10 +119,9 @@ const Books: React.FC = () => {
         }
     };
 
-
     if (loading) {
         return (
-            <div className="flex flex-col justify-center items-center h-[calc(100vh-5rem)] gap-4">
+            <div className="flex flex-col justify-center items-center h-[calc(100vh-4rem)]">
                 <Spinner size="md" />
             </div>
         );
@@ -186,7 +208,10 @@ const Books: React.FC = () => {
                         <>
                             {pagination.totalBooks} livre{pagination.totalBooks > 1 ? "s" : ""} trouvé{pagination.totalBooks > 1 ? "s" : ""}
                             {pagination.totalPages > 1 && (
-                                <span> - Page {pagination.currentPage} sur {pagination.totalPages}</span>
+                                <span>
+                                    {" "}
+                                    - Page {pagination.currentPage} sur {pagination.totalPages}
+                                </span>
                             )}
                         </>
                     ) : (
@@ -205,42 +230,48 @@ const Books: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {books.map((book) => (
-                        <Card key={book.id} className="hover:shadow-md transition-shadow">
-                            <CardHeader className="pb-4">
-                                {book.image_url && (
-                                    <div className="aspect-[3/4] bg-gray-100 rounded-md overflow-hidden relative h-56 w-full">
-                                        <Skeleton className="absolute inset-0 w-full h-full" />
-                                        <img
-                                            src={book.image_url}
-                                            alt={book.title}
-                                            className="w-full h-full object-cover relative z-10"
-                                            loading="lazy"
-                                            onLoad={(e) => {
-                                                const skeleton = e.currentTarget.previousElementSibling;
-                                                if (skeleton) skeleton.style.display = "none";
-                                            }}
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = "none";
-                                                const skeleton = e.currentTarget.previousElementSibling;
-                                                if (skeleton) skeleton.style.display = "none";
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                <CardTitle className="text-lg line-clamp-2" title={book.title}>
+                        <Card key={book.id} className="hover:shadow-md transition-shadow h-full flex flex-col">
+                            <CardHeader className="pb-4 flex-shrink-0">
+                                <div className="aspect-[3/4] bg-gray-100 rounded-md overflow-hidden relative h-48 w-full mb-3">
+                                    {book.image_url ? (
+                                        <>
+                                            <Skeleton className="absolute inset-0 w-full h-full" />
+                                            <img
+                                                src={book.image_url}
+                                                alt={book.title}
+                                                className="w-full h-full object-cover relative z-10"
+                                                loading="lazy"
+                                                onLoad={(e) => {
+                                                    const skeleton = e.currentTarget.previousElementSibling;
+                                                    if (skeleton) skeleton.style.display = "none";
+                                                }}
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = "none";
+                                                    const skeleton = e.currentTarget.previousElementSibling;
+                                                    if (skeleton) skeleton.style.display = "none";
+                                                }}
+                                            />
+                                        </>
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-400 text-sm">Pas d'image</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <CardTitle className="text-lg line-clamp-2 min-h-[3.5rem]" title={book.title}>
                                     {book.title}
                                 </CardTitle>
-                                <div className="text-sm text-gray-600">par {book.author}</div>
-                                {book.publication_year && <div className="text-sm text-gray-500">{book.publication_year}</div>}
+                                <div className="text-sm text-gray-600 truncate">par {book.author}</div>
+                                <div className="text-sm text-gray-500 h-5">{book.publication_year || ""}</div>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex-grow flex flex-col justify-end">
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center">
                                         <Badge variant={getStatusBadgeVariant(book.status)}>{getStatusText(book.status)}</Badge>
                                         <div className="font-semibold text-lg">{book.price}€</div>
                                     </div>
 
-                                    <div className="text-sm text-gray-600">{getCategoryName(book.category_id)}</div>
+                                    <div className="text-sm text-gray-600 truncate">{getCategoryName(book.category_id)}</div>
 
                                     <Button className="w-full mt-4" variant={book.status === "available" ? "default" : "secondary"} disabled={book.status !== "available"}>
                                         {book.status === "available" ? "Louer" : "Indisponible"}
@@ -266,11 +297,7 @@ const Books: React.FC = () => {
                             {pagination.totalPages <= 7 ? (
                                 Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
                                     <PaginationItem key={pageNumber}>
-                                        <PaginationLink
-                                            onClick={() => handlePageChange(pageNumber)}
-                                            isActive={pageNumber === pagination.currentPage}
-                                            className="cursor-pointer"
-                                        >
+                                        <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
                                             {pageNumber}
                                         </PaginationLink>
                                     </PaginationItem>
@@ -278,11 +305,7 @@ const Books: React.FC = () => {
                             ) : (
                                 <>
                                     <PaginationItem>
-                                        <PaginationLink
-                                            onClick={() => handlePageChange(1)}
-                                            isActive={pagination.currentPage === 1}
-                                            className="cursor-pointer"
-                                        >
+                                        <PaginationLink onClick={() => handlePageChange(1)} isActive={pagination.currentPage === 1} className="cursor-pointer">
                                             1
                                         </PaginationLink>
                                     </PaginationItem>
@@ -298,11 +321,7 @@ const Books: React.FC = () => {
                                         if (pageNumber > 1 && pageNumber < pagination.totalPages) {
                                             return (
                                                 <PaginationItem key={pageNumber}>
-                                                    <PaginationLink
-                                                        onClick={() => handlePageChange(pageNumber)}
-                                                        isActive={pageNumber === pagination.currentPage}
-                                                        className="cursor-pointer"
-                                                    >
+                                                    <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
                                                         {pageNumber}
                                                     </PaginationLink>
                                                 </PaginationItem>
@@ -318,11 +337,7 @@ const Books: React.FC = () => {
                                     )}
 
                                     <PaginationItem>
-                                        <PaginationLink
-                                            onClick={() => handlePageChange(pagination.totalPages)}
-                                            isActive={pagination.currentPage === pagination.totalPages}
-                                            className="cursor-pointer"
-                                        >
+                                        <PaginationLink onClick={() => handlePageChange(pagination.totalPages)} isActive={pagination.currentPage === pagination.totalPages} className="cursor-pointer">
                                             {pagination.totalPages}
                                         </PaginationLink>
                                     </PaginationItem>
