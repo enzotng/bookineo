@@ -1,7 +1,6 @@
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-// @ts-ignore
 import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
