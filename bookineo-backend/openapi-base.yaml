@@ -215,6 +215,7 @@ paths:
     post:
       tags: [Messages]
       summary: Envoyer un message
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -236,6 +237,7 @@ paths:
     get:
       tags: [Messages]
       summary: Lister les messages d'un utilisateur
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: userId
@@ -254,6 +256,7 @@ paths:
     get:
       tags: [Messages]
       summary: Obtenir un message par ID (et le marquer lu)
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
@@ -273,6 +276,7 @@ paths:
     delete:
       tags: [Messages]
       summary: Supprimer un message
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: id
@@ -298,6 +302,7 @@ paths:
     get:
       tags: [Messages]
       summary: Compter les messages non lus d'un utilisateur
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: userId
@@ -375,6 +380,7 @@ paths:
     get:
       tags: [Rentals]
       summary: Lister les locations d'un utilisateur
+      security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: userId
