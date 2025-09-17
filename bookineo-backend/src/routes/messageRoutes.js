@@ -5,7 +5,7 @@ const MessageController = require("../controllers/MessageController");
 
 // Messagerie
 router.post("/", MessageController.sendMessage);
-router.get("/", MessageController.getMessages);
+router.get("/:userId", MessageController.getMessages);
 router.get("/:id", MessageController.getMessageById);
 router.delete("/:id", MessageController.deleteMessage);
 router.get("/unread/count", MessageController.getUnreadCount);
