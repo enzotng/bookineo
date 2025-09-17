@@ -1,11 +1,13 @@
 import React from "react";
 import { Button, Avatar, AvatarFallback, Badge, Separator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui";
-import { Bell, Search, User, LogOut, Settings } from "lucide-react";
+import { Bell, Search, User, LogOut, Settings, MessageCircle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useMessages } from "../../hooks/useMessages";
 import { useNavigate } from "react-router-dom";
 
 export const Header: React.FC = () => {
     const { user, logout } = useAuth();
+    const { unreadCount } = useMessages();
     const navigate = useNavigate();
 
     const getUserInitials = () => {
@@ -38,6 +40,22 @@ export const Header: React.FC = () => {
 
             <div className="flex items-center gap-3">
                 <div className="relative">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="relative"
+                        onClick={() => navigate("/messages")}
+                    >
+                        <MessageCircle className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center">
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                            </Badge>
+                        )}
+                    </Button>
+                </div>
+
+                <div className="relative">
                     <Button variant="ghost" size="sm" className="relative">
                         <Bell className="h-5 w-5" />
                         <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center">
@@ -66,6 +84,15 @@ export const Header: React.FC = () => {
                         <DropdownMenuItem onClick={() => navigate("/profile")}>
                             <Settings className="mr-2 h-4 w-4" />
                             <span>Profil</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/messages")}>
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            <span>Messagerie</span>
+                            {unreadCount > 0 && (
+                                <Badge variant="destructive" className="ml-auto text-xs">
+                                    {unreadCount}
+                                </Badge>
+                            )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout}>
