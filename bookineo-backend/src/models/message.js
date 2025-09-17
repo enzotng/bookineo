@@ -2,8 +2,11 @@ export default (sequelize, DataTypes) => {
     const Message = sequelize.define(
         "Message",
         {
-            subject: DataTypes.STRING(200),
-            content: DataTypes.TEXT,
+            id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+            sender_id: { type: DataTypes.UUID, allowNull: false },
+            recipient_id: { type: DataTypes.UUID, allowNull: false },
+            subject: { type: DataTypes.STRING(200) },
+            content: { type: DataTypes.TEXT },
             is_read: { type: DataTypes.BOOLEAN, defaultValue: false },
             sent_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
             created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
