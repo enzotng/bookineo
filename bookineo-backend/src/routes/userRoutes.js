@@ -1,15 +1,14 @@
-// routes/userRoutes.js
-const express = require("express");
+import express from "express";
+import { userControllers } from "../controllers/index.js";
+import { authenticateToken } from "../middleware/auth.js";
+
 const router = express.Router();
-const UserController = require("../controllers/UserController");
 
-// Auth
-router.post("/register", UserController.register);
-router.post("/login", UserController.login);
+router.post("/register", userControllers.register);
+router.post("/login", userControllers.login);
 
-// Profil
-router.get("/profile/:id", UserController.getProfile);
-router.put("/profile/:id", UserController.updateProfile);
-router.delete("/:id", UserController.deleteUser);
+router.get("/profile", authenticateToken, userControllers.getProfile);
+router.put("/profile", authenticateToken, userControllers.updateProfile);
+router.delete("/", authenticateToken, userControllers.deleteUser);
 
-module.exports = router;
+export default router;

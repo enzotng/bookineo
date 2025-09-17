@@ -24,25 +24,24 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button size="lg" className="fixed bottom-4 right-4 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button size="lg" className="z-30 fixed bottom-4 right-4 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all duration-300">
                     <MessageCircle className="w-6 h-6" />
                 </Button>
             </DialogTrigger>
 
             <DialogContent className="max-h-[80vh] flex flex-col p-0 rounded-lg overflow-hidden">
                 <DialogHeader className="p-4 pb-0">
-                    <DialogTitle className="text-lg">Assistant Bookineo</DialogTitle>
+                    <DialogTitle className="text-lg">Neo</DialogTitle>
                     <ChatStatus status={status} />
-                    <Separator className="mt-3" />
                 </DialogHeader>
 
-                <div ref={scrollAreaRef} className="flex-1 p-4 overflow-y-auto">
+                <div ref={scrollAreaRef} className="flex-1 px-4 overflow-y-auto">
                     <div className="space-y-4">
                         {messages.length === 0 ? (
                             <div className="flex flex-col items-center justify-center min-h-[200px] text-center text-muted-foreground">
                                 <MessageCircle className="w-12 h-12 mb-4 opacity-50" />
                                 <p className="text-sm">
-                                    Bonjour ! Je suis votre assistant Bookineo.
+                                    Bonjour ! Je suis Neo.
                                     <br />
                                     Comment puis-je vous aider aujourd'hui ?
                                 </p>
@@ -59,7 +58,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                     </div>
                 </div>
 
-                <div className="p-4 pt-0 border-t">
+                <div className="px-4 pb-4">
                     <ChatInput onSendMessage={sendMessage} isLoading={isLoading} disabled={status.status !== "ready"} />
                 </div>
             </DialogContent>

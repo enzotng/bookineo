@@ -1,13 +1,12 @@
-// routes/messageRoutes.js
-const express = require("express");
+import express from "express";
+import { messageControllers } from "../controllers/index.js";
+
 const router = express.Router();
-const MessageController = require("../controllers/MessageController");
 
-// Messagerie
-router.post("/", MessageController.sendMessage);
-router.get("/:userId", MessageController.getMessages);
-router.get("/:id", MessageController.getMessageById);
-router.delete("/:id", MessageController.deleteMessage);
-router.get("/unread/count", MessageController.getUnreadCount);
+router.post("/", messageControllers.sendMessage);
+router.get("/", messageControllers.getMessages);
+router.get("/:id", messageControllers.getMessageById);
+router.delete("/:id", messageControllers.deleteMessage);
+router.get("/unread/count", messageControllers.getUnreadCount);
 
-module.exports = router;
+export default router;

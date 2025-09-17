@@ -1,8 +1,6 @@
-// controllers/MessageController.js
-const db = require("../config/db");
+import { query } from "../database/connection.js";
 
 class MessageController {
-  // ➕ Envoyer un message
   async sendMessage(req, res) {
     try {
       const { sender_id, recipient_id, subject, content } = req.body;
@@ -11,7 +9,7 @@ class MessageController {
         return res.status(400).json({ error: "Champs obligatoires manquants" });
       }
 
-      const result = await db.query(
+      const result = await query(
         `INSERT INTO messages (sender_id, recipient_id, subject, content)
          VALUES ($1, $2, $3, $4) RETURNING *`,
         [sender_id, recipient_id, subject, content]
@@ -23,12 +21,11 @@ class MessageController {
     }
   }
 
-  // 📋 Récupérer tous les messages d'un utilisateur
   async getMessages(req, res) {
     try {
       const { userId } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT * FROM messages
          WHERE sender_id = $1 OR recipient_id = $1
          ORDER BY sent_at DESC`,
@@ -41,12 +38,11 @@ class MessageController {
     }
   }
 
-  // ✉️ Lire un message précis
   async getMessageById(req, res) {
     try {
       const { id } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT * FROM messages WHERE id = $1`,
         [id]
       );
@@ -55,9 +51,8 @@ class MessageController {
         return res.status(404).json({ error: "Message non trouvé" });
       }
 
-      // Marquer le message comme lu
       if (!result.rows[0].is_read) {
-        await db.query(
+        await query(
           `UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`,
           [id]
         );
@@ -69,12 +64,11 @@ class MessageController {
     }
   }
 
-  // 🗑️ Supprimer un message
   async deleteMessage(req, res) {
     try {
       const { id } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `DELETE FROM messages WHERE id = $1 RETURNING *`,
         [id]
       );
@@ -89,12 +83,11 @@ class MessageController {
     }
   }
 
-  // 🔢 Compter les messages non lus pour un utilisateur
   async getUnreadCount(req, res) {
     try {
       const { userId } = req.params;
 
-      const result = await db.query(
+      const result = await query(
         `SELECT COUNT(*) AS unread_count
          FROM messages
          WHERE recipient_id = $1 AND is_read = false`,
@@ -108,4 +101,4 @@ class MessageController {
   }
 }
 
-module.exports = new MessageController();
+export default new MessageController();

@@ -1,0 +1,634 @@
+openapi: 3.0.3
+info:
+  title: Bookineo API (corrected)
+  version: 1.0.1
+  description: >
+    Spécification alignée sur l'implémentation actuelle (controllers) :
+    champs en snake_case, paramètres attendus, et formes de réponses réelles.
+
+servers:
+  - url: http://localhost:5000
+
+tags:
+  - name: Books
+  - name: Categories
+  - name: Messages
+  - name: Rentals
+  - name: Users
+
+paths:
+  /api/books:
+    get:
+      tags: [Books]
+      summary: Lister les livres
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, example: available }
+        - in: query
+          name: category_id
+          schema: { type: string }
+        - in: query
+          name: author
+          schema: { type: string }
+        - in: query
+          name: title
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BookDB' }
+    post:
+      tags: [Books]
+      summary: Créer un livre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateBookDBInput' }
+      responses:
+        '201':
+          description: Livre créé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookDB' }
+        '400':
+          description: Champs obligatoires manquants
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/books/{id}:
+    get:
+      tags: [Books]
+      summary: Obtenir un livre par ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Livre trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookDB' }
+        '404':
+          description: Livre non trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    put:
+      tags: [Books]
+      summary: Mettre à jour un livre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateBookDBInput' }
+      responses:
+        '200':
+          description: Livre mis à jour
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BookDB' }
+        '404':
+          description: Livre non trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Books]
+      summary: Supprimer un livre
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  deleted: { $ref: '#/components/schemas/BookDB' }
+        '404':
+          description: Livre non trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: Lister les catégories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      summary: Créer une catégorie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCategoryInput' }
+      responses:
+        '201':
+          description: Catégorie créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400':
+          description: Nom obligatoire
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/categories/{id}:
+    put:
+      tags: [Categories]
+      summary: Mettre à jour une catégorie
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCategoryInput' }
+      responses:
+        '200':
+          description: Catégorie mise à jour
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '404':
+          description: Catégorie non trouvée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Categories]
+      summary: Supprimer une catégorie
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Supprimée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  deleted: { $ref: '#/components/schemas/Category' }
+        '404':
+          description: Catégorie non trouvée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/messages:
+    post:
+      tags: [Messages]
+      summary: Envoyer un message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendMessageInputDB' }
+      responses:
+        '201':
+          description: Message envoyé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageDB' }
+        '400':
+          description: Manque de champs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/messages/user/{userId}:
+    get:
+      tags: [Messages]
+      summary: Lister les messages d'un utilisateur
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MessageDB' }
+
+  /api/messages/{id}:
+    get:
+      tags: [Messages]
+      summary: Obtenir un message par ID (et le marquer lu)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MessageDB' }
+        '404':
+          description: Message non trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Messages]
+      summary: Supprimer un message
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  deleted: { $ref: '#/components/schemas/MessageDB' }
+        '404':
+          description: Message non trouvé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/messages/user/{userId}/unread/count:
+    get:
+      tags: [Messages]
+      summary: Compter les messages non lus d'un utilisateur
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unread: { type: integer, example: 3 }
+
+  /api/rentals:
+    get:
+      tags: [Rentals]
+      summary: Lister les locations (avec détails)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RentalWithDetails' }
+
+  /api/rentals/rent:
+    post:
+      tags: [Rentals]
+      summary: Emprunter un livre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RentInputDB' }
+      responses:
+        '201':
+          description: Location créée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RentalDB' }
+        '400':
+          description: Champs manquants ou livre indisponible
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/rentals/return:
+    post:
+      tags: [Rentals]
+      summary: Retourner un livre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReturnInputDB' }
+      responses:
+        '200':
+          description: Message de confirmation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Livre restitué avec succès" }
+        '400':
+          description: Champs manquants ou location introuvable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/rentals/user/{userId}:
+    get:
+      tags: [Rentals]
+      summary: Lister les locations d'un utilisateur
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RentalWithTitle' }
+
+  /api/users/register:
+    post:
+      tags: [Users]
+      summary: Inscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInputDB' }
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegisterResponse' }
+        '400':
+          description: Email déjà utilisé ou champs manquants
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/users/login:
+    post:
+      tags: [Users]
+      summary: Connexion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200':
+          description: Jeton
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthToken' }
+        '400':
+          description: Identifiants incorrects
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/users/profile:
+    get:
+      tags: [Users]
+      summary: Obtenir mon profil
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserPublic' }
+    put:
+      tags: [Users]
+      summary: Mettre à jour mon profil
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserPublic' }
+  /api/users:
+    delete:
+      tags: [Users]
+      summary: Supprimer mon compte
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Utilisateur supprimé" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, example: "Bad Request" }
+
+    # Books (DB shape)
+    BookDB:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        author: { type: string }
+        publication_year: { type: integer, nullable: true }
+        category_id: { type: string, nullable: true }
+        price: { type: number, nullable: true }
+        owner_id: { type: string, nullable: true }
+        image_url: { type: string, nullable: true }
+        status: { type: string, enum: [available, rented], nullable: true }
+      required: [title, author]
+    CreateBookDBInput:
+      type: object
+      properties:
+        title: { type: string }
+        author: { type: string }
+        publication_year: { type: integer, nullable: true }
+        category_id: { type: string, nullable: true }
+        price: { type: number }
+        owner_id: { type: string }
+        image_url: { type: string, nullable: true }
+      required: [title, author, price, owner_id]
+    UpdateBookDBInput:
+      type: object
+      properties:
+        title: { type: string }
+        author: { type: string }
+        publication_year: { type: integer, nullable: true }
+        category_id: { type: string, nullable: true }
+        price: { type: number, nullable: true }
+        status: { type: string, enum: [available, rented], nullable: true }
+        image_url: { type: string, nullable: true }
+
+    # Categories
+    Category:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+      required: [name]
+    CreateCategoryInput:
+      type: object
+      properties:
+        name: { type: string }
+      required: [name]
+    UpdateCategoryInput:
+      allOf:
+        - $ref: '#/components/schemas/CreateCategoryInput'
+
+    # Messages (DB shape)
+    MessageDB:
+      type: object
+      properties:
+        id: { type: string }
+        sender_id: { type: string }
+        recipient_id: { type: string }
+        subject: { type: string, nullable: true }
+        content: { type: string }
+        is_read: { type: boolean, default: false }
+        sent_at: { type: string, format: date-time, nullable: true }
+      required: [sender_id, recipient_id, content]
+    SendMessageInputDB:
+      type: object
+      properties:
+        sender_id: { type: string }
+        recipient_id: { type: string }
+        subject: { type: string, nullable: true }
+        content: { type: string }
+      required: [sender_id, recipient_id, content]
+
+    # Rentals
+    RentalDB:
+      type: object
+      properties:
+        id: { type: string }
+        book_id: { type: string }
+        renter_id: { type: string }
+        rental_date: { type: string, format: date }
+        expected_return_date: { type: string, format: date }
+        actual_return_date: { type: string, format: date-time, nullable: true }
+        status: { type: string, enum: [active, returned] }
+        comment: { type: string, nullable: true }
+    RentalWithDetails:
+      allOf:
+        - $ref: '#/components/schemas/RentalDB'
+        - type: object
+          properties:
+            title: { type: string }
+            first_name: { type: string }
+            last_name: { type: string }
+    RentalWithTitle:
+      allOf:
+        - $ref: '#/components/schemas/RentalDB'
+        - type: object
+          properties:
+            title: { type: string }
+    RentInputDB:
+      type: object
+      properties:
+        book_id: { type: string }
+        renter_id: { type: string }
+        rental_date: { type: string, format: date }
+        expected_return_date: { type: string, format: date }
+      required: [book_id, renter_id, rental_date, expected_return_date]
+    ReturnInputDB:
+      type: object
+      properties:
+        rental_id: { type: string }
+        actual_return_date: { type: string, format: date }
+        comment: { type: string, nullable: true }
+      required: [rental_id, actual_return_date]
+
+    # Users
+    UserPublic:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        first_name: { type: string, nullable: true }
+        last_name: { type: string, nullable: true }
+        birth_date: { type: string, format: date, nullable: true }
+    RegisterInputDB:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+        first_name: { type: string, nullable: true }
+        last_name: { type: string, nullable: true }
+        birth_date: { type: string, format: date, nullable: true }
+      required: [email, password]
+    RegisterResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/UserPublic' }
+    LoginInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+      required: [email, password]
+    AuthToken:
+      type: object
+      properties:
+        token: { type: string }

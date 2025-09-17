@@ -4,7 +4,7 @@ import { Menu, Home, Book, MessageSquare, User, Settings, LogOut } from "lucide-
 import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
-    children: React.ReactNode;
+    mobile?: boolean;
 }
 
 const menuItems = [
@@ -35,17 +35,15 @@ const menuItems = [
     },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
     const location = useLocation();
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full">
-            <div className="flex items-center gap-2 p-4">
+            <div className="flex items-center gap-2 p-4 h-16 border-b">
                 <Book className="h-8 w-8 text-blue-600" />
                 <h1 className="text-xl font-bold">Bookineo</h1>
             </div>
-
-            <Separator />
 
             <nav className="flex-1 px-4 py-4">
                 <ul className="space-y-2">
@@ -88,34 +86,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ children }) => {
         </div>
     );
 
-    return (
-        <>
-            <div className="hidden md:flex h-screen">
-                <div className="w-64 border-r bg-white">
-                    <SidebarContent />
+    if (mobile) {
+        return (
+            <div className="flex items-center justify-between p-4 border-b bg-white">
+                <div className="flex items-center gap-2">
+                    <Book className="h-6 w-6 text-blue-600" />
+                    <h1 className="text-lg font-bold">Bookineo</h1>
                 </div>
-                <div className="flex-1">{children}</div>
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0">
+                        <SidebarContent />
+                    </SheetContent>
+                </Sheet>
             </div>
+        );
+    }
 
-            <div className="md:hidden">
-                <div className="flex items-center justify-between p-4 border-b bg-white">
-                    <div className="flex items-center gap-2">
-                        <Book className="h-6 w-6 text-blue-600" />
-                        <h1 className="text-lg font-bold">Bookineo</h1>
-                    </div>
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                                <Menu className="h-5 w-5" />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="p-0">
-                            <SidebarContent />
-                        </SheetContent>
-                    </Sheet>
-                </div>
-                <div className="flex-1">{children}</div>
-            </div>
-        </>
+    return (
+        <div className="w-64 h-full border-r bg-white">
+            <SidebarContent />
+        </div>
     );
 };
