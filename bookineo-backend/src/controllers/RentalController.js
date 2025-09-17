@@ -84,19 +84,7 @@ class RentalController {
         try {
             const { userId } = req.params;
 
-            const rentals = await query(
-                `SELECT 
-      r.book_id, 
-      b.title AS book_title, 
-      r.rental_date, 
-      r.status, 
-      r.comment
-   FROM rentals r
-   JOIN books b ON r.book_id = b.id
-   WHERE r.renter_id = $1
-   ORDER BY r.rental_date DESC`,
-                [userId]
-            );
+            const rentals = await query(`SELECT * FROM rentals WHERE renter_id = $1 ORDER BY rental_date DESC`, [userId]);
 
             res.json(rentals.rows);
         } catch (error) {
