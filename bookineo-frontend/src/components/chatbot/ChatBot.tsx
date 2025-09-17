@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Button, Separator } from "../ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Button } from "../ui";
 import { MessageCircle } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
@@ -10,9 +10,9 @@ interface ChatBotProps {
     className?: string;
 }
 
-export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
+export const ChatBot: React.FC<ChatBotProps> = () => {
     const [isOpen, setIsOpen] = React.useState(false);
-    const { messages, isLoading, status, sendMessage, clearMessages, checkStatus } = useChatBot();
+    const { messages, isLoading, status, sendMessage } = useChatBot();
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {

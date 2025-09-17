@@ -111,7 +111,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({ messages, particip
                                     <div className="order-1 ml-3">
                                         <Avatar className="w-8 h-8">
                                             <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-xs">
-                                                {getInitials(user?.firstName + " " + user?.lastName || "U")}
+                                                {getInitials(user?.first_name + " " + user?.last_name || "U")}
                                             </div>
                                         </Avatar>
                                     </div>

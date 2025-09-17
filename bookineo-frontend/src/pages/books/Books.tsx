@@ -243,12 +243,12 @@ const Books: React.FC = () => {
                                                 className="w-full h-full object-cover relative z-10"
                                                 loading="lazy"
                                                 onLoad={(e) => {
-                                                    const skeleton = e.currentTarget.previousElementSibling;
+                                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
                                                     if (skeleton) skeleton.style.display = "none";
                                                 }}
                                                 onError={(e) => {
-                                                    e.currentTarget.style.display = "none";
-                                                    const skeleton = e.currentTarget.previousElementSibling;
+                                                    (e.currentTarget as HTMLElement).style.display = "none";
+                                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
                                                     if (skeleton) skeleton.style.display = "none";
                                                 }}
                                             />

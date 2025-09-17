@@ -1,6 +1,6 @@
 import React from "react";
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui";
-import { FileText, Copy } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui";
+import { FileText } from "lucide-react";
 import { messageTemplates } from "../../../utils/messageTemplates";
 
 type MessageTemplate = {

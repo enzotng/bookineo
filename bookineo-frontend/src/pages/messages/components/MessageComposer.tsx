@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Input, Label,
 import { Send, X } from "lucide-react";
 import type { CreateMessageRequest } from "../../../types/message";
 import { MessageTemplatesComponent } from "./MessageTemplates";
+import { toast } from "react-toastify";
 
 type MessageTemplate = {
     subject: string;
@@ -58,9 +59,11 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             setSubject("");
             setContent("");
             setRecipientEmail("");
+            toast.success("Message envoyé avec succès ! 📬");
             onClose();
         } catch (error) {
             console.error("Erreur lors de l'envoi:", error);
+            toast.error("Erreur lors de l'envoi du message");
         } finally {
             setSending(false);
         }

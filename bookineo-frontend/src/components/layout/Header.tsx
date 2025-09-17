@@ -1,6 +1,6 @@
 import React from "react";
-import { Button, Avatar, AvatarFallback, Badge, Separator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui";
-import { Bell, Search, User, LogOut, Settings, MessageCircle } from "lucide-react";
+import { Button, Avatar, AvatarFallback, Badge, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui";
+import { Bell, Search, LogOut, Settings, MessageCircle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useMessages } from "../../hooks/useMessages";
 import { useNavigate } from "react-router-dom";

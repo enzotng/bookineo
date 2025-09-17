@@ -47,7 +47,7 @@ export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
     };
 
     const initialSubject = `Intéressé par "${book.title}"`;
-    const userName = `${user.firstName} ${user.lastName}`.trim();
+    const userName = `${user.first_name} ${user.last_name}`.trim();
 
     return (
         <>

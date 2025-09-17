@@ -58,7 +58,7 @@ export const useAuthState = () => {
 
     const register = async (data: RegisterData) => {
         try {
-            const { user: newUser } = await authAPI.register(data);
+            await authAPI.register(data);
             const loginData = { email: data.email, password: data.password };
             toast.success("Inscription réussie ! Connexion en cours...");
             await login(loginData);

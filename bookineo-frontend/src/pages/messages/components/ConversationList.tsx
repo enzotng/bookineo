@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Input, Button, Badge, Avatar } from "../../../components/ui";
+import { Input, Badge, Avatar } from "../../../components/ui";
 import { Search, MessageCircle } from "lucide-react";
 import type { Conversation } from "../../../types/message";
 
