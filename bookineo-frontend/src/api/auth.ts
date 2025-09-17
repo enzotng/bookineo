@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export interface RegisterData {
     email: string;
@@ -28,7 +28,7 @@ export interface User {
 
 export const authAPI = {
     register: async (data: RegisterData): Promise<{ user: User }> => {
-        const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+        const response = await fetch(`${API_BASE_URL}/users/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export const authAPI = {
     },
 
     login: async (data: LoginData): Promise<AuthResponse> => {
-        const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+        const response = await fetch(`${API_BASE_URL}/users/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export const authAPI = {
             throw new Error("Token manquant");
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${API_BASE_URL}/users/profile`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
