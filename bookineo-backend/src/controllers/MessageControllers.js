@@ -1,4 +1,5 @@
 import { query } from "../database/connection.js";
+import { emailService } from "../services/emailService.js";
 
 class MessageController {
     async sendMessage(req, res) {
@@ -33,6 +34,32 @@ class MessageController {
          VALUES ($1, $2, $3, $4) RETURNING *`,
                 [sender_id, finalRecipientId, subject, content]
             );
+
+            try {
+                const [senderResult, recipientResult] = await Promise.all([
+                    query(`SELECT first_name, last_name FROM users WHERE id = $1`, [sender_id]),
+                    query(`SELECT email, first_name, last_name FROM users WHERE id = $1`, [finalRecipientId])
+                ]);
+
+                if (senderResult.rows.length > 0 && recipientResult.rows.length > 0) {
+                    const sender = senderResult.rows[0];
+                    const recipient = recipientResult.rows[0];
+
+                    const senderName = `${sender.first_name} ${sender.last_name}`;
+                    const recipientName = `${recipient.first_name} ${recipient.last_name}`;
+                    const messagePreview = content.length > 100 ? content.substring(0, 100) : content;
+
+                    await emailService.sendNewMessageNotification(
+                        recipient.email,
+                        recipientName,
+                        senderName,
+                        subject,
+                        messagePreview
+                    );
+                }
+            } catch (emailError) {
+                console.error('Erreur envoi notification message:', emailError);
+            }
 
             res.status(201).json(result.rows[0]);
         } catch (error) {

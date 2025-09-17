@@ -1,6 +1,7 @@
 import { query } from "../database/connection.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { emailService } from "../services/emailService.js";
 
 class UserController {
     async register(req, res) {
@@ -23,6 +24,12 @@ class UserController {
          VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, birth_date`,
                 [email, hashedPassword, first_name, last_name, birth_date || null]
             );
+
+            try {
+                await emailService.sendWelcome(email, first_name);
+            } catch (emailError) {
+                console.error('Erreur envoi email de bienvenue:', emailError);
+            }
 
             res.status(201).json({ user: result.rows[0] });
         } catch (error) {
