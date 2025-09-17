@@ -1,14 +1,40 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAuth } from "../../hooks/useAuth";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from "../../components/ui";
 import { Eye, EyeOff } from "lucide-react";
+
+const loginSchema = z.object({
+    email: z.string().email("Format d'email invalide"),
+    password: z.string().min(1, "Mot de passe obligatoire"),
+    rememberMe: z.boolean().optional()
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
     const [showPassword, setShowPassword] = React.useState(false);
-    const [rememberMe, setRememberMe] = React.useState(false);
+    const [error, setError] = React.useState("");
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
+        resolver: zodResolver(loginSchema)
+    });
+
+    const onSubmit = async (data: LoginForm) => {
+        try {
+            setError("");
+            await login(data);
+            navigate("/home");
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Erreur de connexion";
+            setError(errorMessage);
+        }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -17,37 +43,69 @@ const Login: React.FC = () => {
                     <CardTitle className="text-2xl font-bold">Bookineo</CardTitle>
                     <CardDescription>Connectez-vous à votre compte</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="prenom.nom@domaine.com" required />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Mot de passe</Label>
-                        <div className="relative">
-                            <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
-                            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
+                <CardContent>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                                {error}
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="prenom.nom@domaine.com"
+                                {...register("email")}
+                            />
+                            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                         </div>
-                    </div>
 
-                    <div className="flex items-center space-x-2">
-                        <input type="checkbox" id="remember" className="rounded border-gray-300" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-                        <Label htmlFor="remember" className="text-sm font-normal">
-                            Remember me
-                        </Label>
-                    </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Mot de passe</Label>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    {...register("password")}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                        </div>
 
-                    <Button className="w-full">Se connecter</Button>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                className="rounded border-gray-300"
+                                {...register("rememberMe")}
+                            />
+                            <Label htmlFor="remember" className="text-sm font-normal">
+                                Remember me
+                            </Label>
+                        </div>
 
-                    <div className="text-center text-sm">
-                        <span className="text-gray-600">Pas encore de compte ? </span>
-                        <Link to="/auth/register" className="text-blue-600 hover:underline">
-                            Créer un compte
-                        </Link>
-                    </div>
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting ? "Connexion..." : "Se connecter"}
+                        </Button>
+
+                        <div className="text-center text-sm">
+                            <span className="text-gray-600">Pas encore de compte ? </span>
+                            <Link to="/auth/register" className="text-blue-600 hover:underline">
+                                Créer un compte
+                            </Link>
+                        </div>
+                    </form>
                 </CardContent>
             </Card>
         </div>
