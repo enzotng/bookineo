@@ -1,6 +1,6 @@
 import type { Message, MessageWithUser, Conversation, MessageFilters, CreateMessageRequest, UnreadCountResponse } from "../types/message";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem("authToken");

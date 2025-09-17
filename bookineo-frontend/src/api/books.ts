@@ -1,6 +1,6 @@
 import type { Book, Category, BookFilters, BooksResponse, CreateBookRequest, UpdateBookRequest } from "../types/book";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 class BooksAPI {
     async getBooks(filters?: BookFilters): Promise<BooksResponse> {

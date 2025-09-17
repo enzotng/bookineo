@@ -1,6 +1,6 @@
 import type { ChatResponse, ChatStatus, SendMessageRequest } from "../types/chat";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 class ChatAPI {
     async sendMessage(request: SendMessageRequest): Promise<ChatResponse> {
