@@ -85,11 +85,16 @@ class RentalController {
             const { userId } = req.params;
 
             const rentals = await query(
-                `SELECT r.*, b.title
-         FROM rentals r
-         JOIN books b ON r.book_id = b.id
-         WHERE r.renter_id = $1
-         ORDER BY r.rental_date DESC`,
+                `SELECT 
+      r.book_id, 
+      b.title AS book_title, 
+      r.rental_date, 
+      r.status, 
+      r.comment
+   FROM rentals r
+   JOIN books b ON r.book_id = b.id
+   WHERE r.renter_id = $1
+   ORDER BY r.rental_date DESC`,
                 [userId]
             );
 
