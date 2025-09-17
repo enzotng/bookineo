@@ -28,6 +28,22 @@ export interface BookFilters {
     category_id?: number;
     author?: string;
     title?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface PaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalBooks: number;
+    limit: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
+
+export interface BooksResponse {
+    books: Book[];
+    pagination: PaginationInfo;
 }
 
 export interface CreateBookRequest {

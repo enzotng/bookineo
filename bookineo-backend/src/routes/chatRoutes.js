@@ -12,11 +12,6 @@ router.post("/", async (req, res) => {
         }
 
         const messages = [
-            {
-                role: "system",
-                content:
-                    "Tu es un assistant virtuel pour Bookineo, une application de location de livres entre particuliers. Tu aides les utilisateurs avec leurs questions sur la location de livres, la recherche, les profils, etc. Réponds de manière amicale et utile en français.",
-            },
             ...history,
             {
                 role: "user",
@@ -44,7 +39,7 @@ router.get("/status", async (req, res) => {
         const isConnected = await lmStudio.testConnection();
         res.json({
             connected: isConnected,
-            model: "openai/gpt-oss-20b",
+            model: "qwen2-1_5b-instruct",
             status: isConnected ? "ready" : "disconnected",
         });
     } catch (error) {

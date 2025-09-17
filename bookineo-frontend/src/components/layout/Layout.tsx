@@ -8,15 +8,28 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
-            <Sidebar>
-                <div className="flex flex-col flex-1 min-h-0">
+        <>
+            <aside className="hidden md:block fixed left-0 top-0 h-screen z-40">
+                <Sidebar />
+            </aside>
+
+            <div className="hidden md:block ml-64">
+                <header className="fixed top-0 left-64 right-0 z-30">
                     <Header />
-                    <main className="flex-1 overflow-auto p-6">
-                        {children}
-                    </main>
+                </header>
+                <main className="bg-gray-50 p-6 pt-20">
+                    {children}
+                </main>
+            </div>
+
+            <div className="md:hidden">
+                <div className="fixed top-0 left-0 right-0 z-50">
+                    <Sidebar mobile />
                 </div>
-            </Sidebar>
-        </div>
+                <main className="bg-gray-50 p-6 pt-20">
+                    {children}
+                </main>
+            </div>
+        </>
     );
 };

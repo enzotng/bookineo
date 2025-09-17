@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { booksAPI } from "../../api/books";
-import type { Book, Category, BookFilters } from "../../types/book";
-import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Input, Label } from "../../components/ui";
+import type { Book, Category, BookFilters, PaginationInfo } from "../../types/book";
+import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Card, CardContent, CardHeader, CardTitle, Input, Label, Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, Skeleton, Spinner } from "../../components/ui";
 const Books: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [pagination, setPagination] = useState<PaginationInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [filters, setFilters] = useState<BookFilters>({});
+    const [filters, setFilters] = useState<BookFilters>({ page: 1, limit: 12 });
     const [searchTitle, setSearchTitle] = useState("");
     const [searchAuthor, setSearchAuthor] = useState("");
 
@@ -16,9 +17,10 @@ const Books: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const { books: fetchedBooks, categories: fetchedCategories } = await booksAPI.getBooksAndCategories(currentFilters);
+            const { booksResponse, categories: fetchedCategories } = await booksAPI.getBooksAndCategories(currentFilters);
 
-            setBooks(fetchedBooks);
+            setBooks(booksResponse.books);
+            setPagination(booksResponse.pagination);
             setCategories(fetchedCategories);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erreur lors du chargement");
@@ -32,7 +34,7 @@ const Books: React.FC = () => {
     }, []);
 
     const handleFilterChange = (key: keyof BookFilters, value: string | number | undefined) => {
-        const newFilters = { ...filters, [key]: value };
+        const newFilters = { ...filters, [key]: value, page: 1 };
         setFilters(newFilters);
         loadBooksAndCategories(newFilters);
     };
@@ -42,16 +44,24 @@ const Books: React.FC = () => {
             ...filters,
             title: searchTitle || undefined,
             author: searchAuthor || undefined,
+            page: 1,
         };
         setFilters(searchFilters);
         loadBooksAndCategories(searchFilters);
     };
 
     const clearFilters = () => {
-        setFilters({});
+        const resetFilters = { page: 1, limit: 12 };
+        setFilters(resetFilters);
         setSearchTitle("");
         setSearchAuthor("");
-        loadBooksAndCategories({});
+        loadBooksAndCategories(resetFilters);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        const newFilters = { ...filters, page: newPage };
+        setFilters(newFilters);
+        loadBooksAndCategories(newFilters);
     };
 
     const getCategoryName = (categoryId?: number) => {
@@ -86,33 +96,28 @@ const Books: React.FC = () => {
         }
     };
 
-    const filteredBooks = useMemo(() => books, [books]);
 
     if (loading) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Chargement des livres...</div>
-                </div>
+            <div className="flex flex-col justify-center items-center h-[calc(100vh-5rem)] gap-4">
+                <Spinner size="md" />
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-center">
-                        <div className="text-red-500 mb-4">Erreur: {error}</div>
-                        <Button onClick={() => loadBooksAndCategories(filters)}>Réessayer</Button>
-                    </div>
+            <div className="flex justify-center items-center h-64">
+                <div className="text-center">
+                    <div className="text-red-500 mb-4">Erreur: {error}</div>
+                    <Button onClick={() => loadBooksAndCategories(filters)}>Réessayer</Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-6">
+        <div>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-6">Catalogue des livres</h1>
 
@@ -177,11 +182,20 @@ const Books: React.FC = () => {
 
             <div className="mb-4">
                 <div className="text-sm text-gray-600">
-                    {filteredBooks.length} livre{filteredBooks.length > 1 ? "s" : ""} trouvé{filteredBooks.length > 1 ? "s" : ""}
+                    {pagination ? (
+                        <>
+                            {pagination.totalBooks} livre{pagination.totalBooks > 1 ? "s" : ""} trouvé{pagination.totalBooks > 1 ? "s" : ""}
+                            {pagination.totalPages > 1 && (
+                                <span> - Page {pagination.currentPage} sur {pagination.totalPages}</span>
+                            )}
+                        </>
+                    ) : (
+                        `${books.length} livre${books.length > 1 ? "s" : ""} trouvé${books.length > 1 ? "s" : ""}`
+                    )}
                 </div>
             </div>
 
-            {filteredBooks.length === 0 ? (
+            {books.length === 0 ? (
                 <div className="text-center py-12">
                     <div className="text-gray-500 mb-4">Aucun livre trouvé</div>
                     <Button variant="outline" onClick={clearFilters}>
@@ -190,18 +204,25 @@ const Books: React.FC = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredBooks.map((book) => (
+                    {books.map((book) => (
                         <Card key={book.id} className="hover:shadow-md transition-shadow">
                             <CardHeader className="pb-4">
                                 {book.image_url && (
-                                    <div className="aspect-[3/4] mb-4 bg-gray-100 rounded-md overflow-hidden">
+                                    <div className="aspect-[3/4] bg-gray-100 rounded-md overflow-hidden relative h-56 w-full">
+                                        <Skeleton className="absolute inset-0 w-full h-full" />
                                         <img
                                             src={book.image_url}
                                             alt={book.title}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover relative z-10"
                                             loading="lazy"
+                                            onLoad={(e) => {
+                                                const skeleton = e.currentTarget.previousElementSibling;
+                                                if (skeleton) skeleton.style.display = "none";
+                                            }}
                                             onError={(e) => {
                                                 e.currentTarget.style.display = "none";
+                                                const skeleton = e.currentTarget.previousElementSibling;
+                                                if (skeleton) skeleton.style.display = "none";
                                             }}
                                         />
                                     </div>
@@ -228,6 +249,94 @@ const Books: React.FC = () => {
                             </CardContent>
                         </Card>
                     ))}
+                </div>
+            )}
+
+            {pagination && pagination.totalPages > 1 && (
+                <div className="mt-8">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={() => pagination.hasPreviousPage && handlePageChange(pagination.currentPage - 1)}
+                                    className={!pagination.hasPreviousPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+
+                            {pagination.totalPages <= 7 ? (
+                                Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                    <PaginationItem key={pageNumber}>
+                                        <PaginationLink
+                                            onClick={() => handlePageChange(pageNumber)}
+                                            isActive={pageNumber === pagination.currentPage}
+                                            className="cursor-pointer"
+                                        >
+                                            {pageNumber}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))
+                            ) : (
+                                <>
+                                    <PaginationItem>
+                                        <PaginationLink
+                                            onClick={() => handlePageChange(1)}
+                                            isActive={pagination.currentPage === 1}
+                                            className="cursor-pointer"
+                                        >
+                                            1
+                                        </PaginationLink>
+                                    </PaginationItem>
+
+                                    {pagination.currentPage > 3 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    )}
+
+                                    {Array.from({ length: 3 }, (_, i) => {
+                                        const pageNumber = pagination.currentPage - 1 + i;
+                                        if (pageNumber > 1 && pageNumber < pagination.totalPages) {
+                                            return (
+                                                <PaginationItem key={pageNumber}>
+                                                    <PaginationLink
+                                                        onClick={() => handlePageChange(pageNumber)}
+                                                        isActive={pageNumber === pagination.currentPage}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {pageNumber}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+
+                                    {pagination.currentPage < pagination.totalPages - 2 && (
+                                        <PaginationItem>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationLink
+                                            onClick={() => handlePageChange(pagination.totalPages)}
+                                            isActive={pagination.currentPage === pagination.totalPages}
+                                            className="cursor-pointer"
+                                        >
+                                            {pagination.totalPages}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                </>
+                            )}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={() => pagination.hasNextPage && handlePageChange(pagination.currentPage + 1)}
+                                    className={!pagination.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             )}
         </div>

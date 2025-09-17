@@ -1,9 +1,9 @@
-import type { Book, Category, BookFilters, CreateBookRequest, UpdateBookRequest } from "../types/book";
+import type { Book, Category, BookFilters, BooksResponse, CreateBookRequest, UpdateBookRequest } from "../types/book";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 class BooksAPI {
-    async getBooks(filters?: BookFilters): Promise<Book[]> {
+    async getBooks(filters?: BookFilters): Promise<BooksResponse> {
         try {
             const params = new URLSearchParams();
             if (filters) {
@@ -57,14 +57,14 @@ class BooksAPI {
         }
     }
 
-    async getBooksAndCategories(filters?: BookFilters): Promise<{ books: Book[]; categories: Category[] }> {
+    async getBooksAndCategories(filters?: BookFilters): Promise<{ booksResponse: BooksResponse; categories: Category[] }> {
         try {
-            const [books, categories] = await Promise.all([
+            const [booksResponse, categories] = await Promise.all([
                 this.getBooks(filters),
                 this.getCategories()
             ]);
 
-            return { books, categories };
+            return { booksResponse, categories };
         } catch (error) {
             console.error("Optimized fetch error:", error);
             throw error;
