@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Carousel, Caro
 import { Plus, BookOpen, TrendingUp, Users } from "lucide-react";
 import { booksAPI } from "../api/books";
 import type { Book } from "../types/book";
+import { ContactOwnerButton } from "../components/messaging";
 
 const Home: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
@@ -144,9 +145,21 @@ const Home: React.FC = () => {
 
                                                     <div className="text-sm text-gray-600 truncate">{getCategoryName(book.category_id)}</div>
 
-                                                    <Button className="w-full mt-4" variant={book.status === "available" ? "default" : "secondary"} disabled={book.status !== "available"}>
-                                                        {book.status === "available" ? "Louer" : "Indisponible"}
-                                                    </Button>
+                                                    <div className="flex space-x-2 mt-4">
+                                                        <Button
+                                                            className="flex-1"
+                                                            variant={book.status === "available" ? "default" : "secondary"}
+                                                            disabled={book.status !== "available"}
+                                                        >
+                                                            {book.status === "available" ? "Louer" : "Indisponible"}
+                                                        </Button>
+
+                                                        <ContactOwnerButton
+                                                            book={book}
+                                                            ownerName="Propriétaire"
+                                                            ownerEmail="owner@example.com"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -226,9 +239,21 @@ const Home: React.FC = () => {
 
                                         <div className="text-sm text-gray-600 truncate">{getCategoryName(book.category_id)}</div>
 
-                                        <Button className="w-full mt-4" variant={book.status === "available" ? "default" : "secondary"} disabled={book.status !== "available"}>
-                                            {book.status === "available" ? "Louer" : "Indisponible"}
-                                        </Button>
+                                        <div className="flex space-x-2 mt-4">
+                                            <Button
+                                                className="flex-1"
+                                                variant={book.status === "available" ? "default" : "secondary"}
+                                                disabled={book.status !== "available"}
+                                            >
+                                                {book.status === "available" ? "Louer" : "Indisponible"}
+                                            </Button>
+
+                                            <ContactOwnerButton
+                                                book={book}
+                                                ownerName="Propriétaire"
+                                                ownerEmail="owner@example.com"
+                                            />
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>

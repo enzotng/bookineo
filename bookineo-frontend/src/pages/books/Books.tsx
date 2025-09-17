@@ -25,6 +25,7 @@ import {
     Skeleton,
     Spinner,
 } from "../../components/ui";
+import { ContactOwnerButton } from "../../components/messaging";
 const Books: React.FC = () => {
     const [books, setBooks] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -273,9 +274,21 @@ const Books: React.FC = () => {
 
                                     <div className="text-sm text-gray-600 truncate">{getCategoryName(book.category_id)}</div>
 
-                                    <Button className="w-full mt-4" variant={book.status === "available" ? "default" : "secondary"} disabled={book.status !== "available"}>
-                                        {book.status === "available" ? "Louer" : "Indisponible"}
-                                    </Button>
+                                    <div className="flex space-x-2 mt-4">
+                                        <Button
+                                            className="flex-1"
+                                            variant={book.status === "available" ? "default" : "secondary"}
+                                            disabled={book.status !== "available"}
+                                        >
+                                            {book.status === "available" ? "Louer" : "Indisponible"}
+                                        </Button>
+
+                                        <ContactOwnerButton
+                                            book={book}
+                                            ownerName="Propriétaire"
+                                            ownerEmail="owner@example.com"
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
