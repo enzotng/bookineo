@@ -94,19 +94,13 @@ export const messagesAPI = {
             }
         });
 
-        return Array.from(conversationsMap.values()).sort(
-            (a, b) => new Date(b.lastMessage.sent_at).getTime() - new Date(a.lastMessage.sent_at).getTime()
-        );
+        return Array.from(conversationsMap.values()).sort((a, b) => new Date(b.lastMessage.sent_at).getTime() - new Date(a.lastMessage.sent_at).getTime());
     },
 
     async getConversationWith(userId: string, participantId: string): Promise<MessageWithUser[]> {
         const messages = await this.getMessages(userId);
         return messages
-            .filter(
-                (message) =>
-                    (message.sender_id === userId && message.recipient_id === participantId) ||
-                    (message.sender_id === participantId && message.recipient_id === userId)
-            )
+            .filter((message) => (message.sender_id === userId && message.recipient_id === participantId) || (message.sender_id === participantId && message.recipient_id === userId))
             .sort((a, b) => new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime());
     },
 
@@ -114,8 +108,7 @@ export const messagesAPI = {
         const messages = await this.getMessages(userId);
 
         return messages.filter((message) => {
-            if (filters.search && !message.content.toLowerCase().includes(filters.search.toLowerCase()) &&
-                !message.subject?.toLowerCase().includes(filters.search.toLowerCase())) {
+            if (filters.search && !message.content.toLowerCase().includes(filters.search.toLowerCase()) && !message.subject?.toLowerCase().includes(filters.search.toLowerCase())) {
                 return false;
             }
 

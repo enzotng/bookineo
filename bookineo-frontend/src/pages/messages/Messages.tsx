@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Button, Badge } from "../../components/ui";
+import { Button, Badge, Spinner } from "../../components/ui";
 import { MessageCircle, Plus, RefreshCw } from "lucide-react";
 import { ConversationList } from "./components/ConversationList";
 import { MessageThread } from "./components/MessageThread";
@@ -11,20 +11,8 @@ import type { MessageFilters } from "../../types/message";
 
 const Messages: React.FC = () => {
     const { user } = useAuth();
-    const {
-        conversations,
-        selectedConversation,
-        messages,
-        unreadCount,
-        loading,
-        error,
-        loadConversationMessages,
-        sendMessage,
-        deleteMessage,
-        markAllAsRead,
-        refreshMessages,
-        setError,
-    } = useMessages();
+    const { conversations, selectedConversation, messages, unreadCount, loading, error, loadConversationMessages, sendMessage, deleteMessage, markAllAsRead, refreshMessages, setError } =
+        useMessages();
 
     const [isComposerOpen, setIsComposerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -81,10 +69,8 @@ const Messages: React.FC = () => {
 
     if (!user) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                    <div className="text-gray-500">Vous devez être connecté pour accéder à la messagerie</div>
-                </div>
+            <div className="flex flex-col justify-center items-center h-[calc(100vh-4rem)]">
+                <Spinner size="md" />
             </div>
         );
     }
@@ -106,12 +92,7 @@ const Messages: React.FC = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={refreshMessages}
-                            disabled={loading}
-                        >
+                        <Button variant="outline" size="sm" onClick={refreshMessages} disabled={loading}>
                             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                         </Button>
 
@@ -123,22 +104,12 @@ const Messages: React.FC = () => {
                 </div>
             </div>
 
-            <MessageFiltersComponent
-                filters={filters}
-                onFiltersChange={setFilters}
-                onMarkAllAsRead={markAllAsRead}
-                unreadCount={unreadCount}
-            />
+            <MessageFiltersComponent filters={filters} onFiltersChange={setFilters} onMarkAllAsRead={markAllAsRead} unreadCount={unreadCount} />
 
             {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 text-sm">
                     {error}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setError(null)}
-                        className="ml-2 text-red-600 hover:text-red-800"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setError(null)} className="ml-2 text-red-600 hover:text-red-800">
                         ×
                     </Button>
                 </div>
@@ -154,22 +125,10 @@ const Messages: React.FC = () => {
                     loading={loading}
                 />
 
-                <MessageThread
-                    messages={messages}
-                    participant={selectedParticipant}
-                    onReply={handleReply}
-                    onDelete={handleDeleteMessage}
-                    loading={loading}
-                />
+                <MessageThread messages={messages} participant={selectedParticipant} onReply={handleReply} onDelete={handleDeleteMessage} loading={loading} />
             </div>
 
-            <MessageComposer
-                isOpen={isComposerOpen}
-                onClose={() => setIsComposerOpen(false)}
-                onSend={handleSendMessage}
-                recipient={selectedParticipant}
-                senderId={user.id}
-            />
+            <MessageComposer isOpen={isComposerOpen} onClose={() => setIsComposerOpen(false)} onSend={handleSendMessage} recipient={selectedParticipant} senderId={user.id} />
         </div>
     );
 };
