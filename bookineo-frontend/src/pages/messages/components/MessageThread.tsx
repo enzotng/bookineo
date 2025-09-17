@@ -12,13 +12,7 @@ interface MessageThreadProps {
     loading: boolean;
 }
 
-export const MessageThread: React.FC<MessageThreadProps> = ({
-    messages,
-    participant,
-    onReply,
-    onDelete,
-    loading,
-}) => {
+export const MessageThread: React.FC<MessageThreadProps> = ({ messages, participant, onReply, onDelete, loading }) => {
     const { user } = useAuth();
 
     const formatDateTime = (dateString: string) => {
@@ -60,9 +54,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                         <Avatar className="w-10 h-10">
-                            <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
-                                {getInitials(participant.name)}
-                            </div>
+                            <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">{getInitials(participant.name)}</div>
                         </Avatar>
                         <div>
                             <h2 className="text-lg font-semibold text-gray-900">{participant.name}</h2>
@@ -89,50 +81,18 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                     messages.map((message) => {
                         const isFromUser = message.sender_id === user?.id;
                         return (
-                            <div
-                                key={message.id}
-                                className={`flex ${isFromUser ? "justify-end" : "justify-start"}`}
-                            >
+                            <div key={message.id} className={`flex ${isFromUser ? "justify-end" : "justify-start"}`}>
                                 <div className={`max-w-2xl ${isFromUser ? "order-2" : "order-1"}`}>
-                                    <Card
-                                        className={`p-4 ${
-                                            isFromUser
-                                                ? "bg-blue-500 text-white border-blue-500"
-                                                : "bg-gray-100 border-gray-200"
-                                        }`}
-                                    >
-                                        {message.subject && (
-                                            <div
-                                                className={`font-semibold mb-2 pb-2 border-b ${
-                                                    isFromUser ? "border-blue-400" : "border-gray-300"
-                                                }`}
-                                            >
-                                                {message.subject}
-                                            </div>
-                                        )}
+                                    <Card className={`p-4 ${isFromUser ? "bg-blue-500 text-white border-blue-500" : "bg-gray-100 border-gray-200"}`}>
+                                        {message.subject && <div className={`font-semibold mb-2 pb-2 border-b ${isFromUser ? "border-blue-400" : "border-gray-300"}`}>{message.subject}</div>}
                                         <div className="whitespace-pre-wrap">{message.content}</div>
                                     </Card>
 
-                                    <div
-                                        className={`flex items-center mt-2 space-x-2 text-xs ${
-                                            isFromUser ? "justify-end" : "justify-start"
-                                        }`}
-                                    >
-                                        <span className="text-gray-500">
-                                            {formatDateTime(message.sent_at)}
-                                        </span>
-                                        {!message.is_read && message.recipient_id === user?.id && (
-                                            <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs">
-                                                Non lu
-                                            </span>
-                                        )}
+                                    <div className={`flex items-center mt-2 space-x-2 text-xs ${isFromUser ? "justify-end" : "justify-start"}`}>
+                                        <span className="text-gray-500">{formatDateTime(message.sent_at)}</span>
+                                        {!message.is_read && message.recipient_id === user?.id && <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs">Non lu</span>}
                                         {isFromUser && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onDelete(message.id)}
-                                                className="text-gray-500 hover:text-red-500 p-1 h-auto"
-                                            >
+                                            <Button variant="ghost" size="sm" onClick={() => onDelete(message.id)} className="text-gray-500 hover:text-red-500 p-1 h-auto">
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>
                                         )}
@@ -142,9 +102,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                 {!isFromUser && (
                                     <div className="order-1 mr-3">
                                         <Avatar className="w-8 h-8">
-                                            <div className="w-full h-full bg-gray-500 text-white flex items-center justify-center text-xs">
-                                                {getInitials(participant.name)}
-                                            </div>
+                                            <div className="w-full h-full bg-gray-500 text-white flex items-center justify-center text-xs">{getInitials(participant.name)}</div>
                                         </Avatar>
                                     </div>
                                 )}

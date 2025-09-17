@@ -14,11 +14,7 @@ interface MessageTemplatesProps {
     userName?: string;
 }
 
-export const MessageTemplatesComponent: React.FC<MessageTemplatesProps> = ({
-    onSelectTemplate,
-    bookTitle,
-    userName,
-}) => {
+export const MessageTemplatesComponent: React.FC<MessageTemplatesProps> = ({ onSelectTemplate, bookTitle, userName }) => {
     const handleTemplateSelect = (templateKey: string) => {
         let template: MessageTemplate | null = null;
 
@@ -34,10 +30,7 @@ export const MessageTemplatesComponent: React.FC<MessageTemplatesProps> = ({
                 );
                 break;
             case "rental-reminder":
-                template = messageTemplates.rental.reminder(
-                    bookTitle || "ce livre",
-                    new Date().toLocaleDateString("fr-FR")
-                );
+                template = messageTemplates.rental.reminder(bookTitle || "ce livre", new Date().toLocaleDateString("fr-FR"));
                 break;
             case "rental-returned":
                 template = messageTemplates.rental.returned(bookTitle || "ce livre");

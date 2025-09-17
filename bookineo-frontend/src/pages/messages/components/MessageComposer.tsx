@@ -33,22 +33,31 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     const [subject, setSubject] = useState(initialSubject);
     const [content, setContent] = useState("");
     const [sending, setSending] = useState(false);
+    const [recipientEmail, setRecipientEmail] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!recipient || !content.trim()) return;
+
+        const currentRecipient = recipient || (recipientEmail.trim() ? {
+            id: recipientEmail.trim(),
+            name: recipientEmail.trim(),
+            email: recipientEmail.trim()
+        } : null);
+
+        if (!currentRecipient || !content.trim()) return;
 
         try {
             setSending(true);
             await onSend({
                 sender_id: senderId,
-                recipient_id: recipient.id,
+                recipient_id: currentRecipient.id,
                 subject: subject.trim() || undefined,
                 content: content.trim(),
             });
 
             setSubject("");
             setContent("");
+            setRecipientEmail("");
             onClose();
         } catch (error) {
             console.error("Erreur lors de l'envoi:", error);
@@ -82,7 +91,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                     </div>
                 </DialogHeader>
 
-                {recipient && (
+                {recipient ? (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                         <Avatar className="w-8 h-8">
                             <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-sm">
@@ -93,6 +102,18 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                             <div className="font-medium text-sm">{recipient.name}</div>
                             <div className="text-xs text-gray-600">{recipient.email}</div>
                         </div>
+                    </div>
+                ) : (
+                    <div>
+                        <Label htmlFor="recipient-email">Destinataire</Label>
+                        <Input
+                            id="recipient-email"
+                            type="email"
+                            value={recipientEmail}
+                            onChange={(e) => setRecipientEmail(e.target.value)}
+                            placeholder="Email du destinataire..."
+                            required
+                        />
                     </div>
                 )}
 
@@ -130,7 +151,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                         <Button type="button" variant="outline" onClick={onClose} disabled={sending}>
                             Annuler
                         </Button>
-                        <Button type="submit" disabled={sending || !content.trim() || !recipient}>
+                        <Button type="submit" disabled={sending || !content.trim() || (!recipient && !recipientEmail.trim())}>
                             {sending ? (
                                 "Envoi..."
                             ) : (
