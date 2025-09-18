@@ -1,5 +1,6 @@
 import { query } from "../database/connection.js";
 import { emailService } from "../services/emailService.js";
+import { emitToUser } from "../services/socketService.js";
 
 class MessageController {
     async sendMessage(req, res) {
@@ -35,12 +36,12 @@ class MessageController {
                 [sender_id, finalRecipientId, subject, content]
             );
 
-            try {
-                const [senderResult, recipientResult] = await Promise.all([
-                    query(`SELECT first_name, last_name FROM users WHERE id = $1`, [sender_id]),
-                    query(`SELECT email, first_name, last_name FROM users WHERE id = $1`, [finalRecipientId])
-                ]);
+            const [senderResult, recipientResult] = await Promise.all([
+                query(`SELECT first_name, last_name FROM users WHERE id = $1`, [sender_id]),
+                query(`SELECT email, first_name, last_name FROM users WHERE id = $1`, [finalRecipientId])
+            ]);
 
+            try {
                 if (senderResult.rows.length > 0 && recipientResult.rows.length > 0) {
                     const sender = senderResult.rows[0];
                     const recipient = recipientResult.rows[0];
@@ -60,6 +61,15 @@ class MessageController {
             } catch (emailError) {
                 console.error('Erreur envoi notification message:', emailError);
             }
+
+            emitToUser(finalRecipientId, 'newMessage', {
+                ...result.rows[0],
+                sender: {
+                    id: sender_id,
+                    first_name: senderResult.rows[0]?.first_name,
+                    last_name: senderResult.rows[0]?.last_name
+                }
+            });
 
             res.status(201).json(result.rows[0]);
         } catch (error) {
