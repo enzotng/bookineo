@@ -53,7 +53,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto h-full">
                 {loading ? (
                     <div className="p-4 text-center text-gray-500">Chargement...</div>
                 ) : conversations.length === 0 ? (

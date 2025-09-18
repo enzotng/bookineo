@@ -76,8 +76,8 @@ const Messages: React.FC = () => {
     }
 
     return (
-        <div className="h-[calc(100vh-4rem)] flex flex-col">
-            <div className="border-b bg-white px-6 py-4">
+        <div className="h-full flex flex-col bg-white px-6 py-4 rounded-lg border">
+            <div className="border-b">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
@@ -115,7 +115,7 @@ const Messages: React.FC = () => {
                 </div>
             )}
 
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden h-full">
                 <ConversationList
                     conversations={filteredConversations}
                     selectedConversation={selectedConversation}

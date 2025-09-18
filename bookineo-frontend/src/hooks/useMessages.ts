@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { messagesAPI } from "../api/messages";
 import type { Conversation, MessageWithUser, MessageFilters, CreateMessageRequest } from "../types/message";
 import { useAuth } from "./useAuth";
+import { socketService } from "../services/socketService";
 
 export const useMessages = () => {
     const { user } = useAuth();
@@ -119,9 +120,17 @@ export const useMessages = () => {
     }, [loadConversations]);
 
     useEffect(() => {
-        const interval = setInterval(refreshMessages, 30000);
-        return () => clearInterval(interval);
-    }, [refreshMessages]);
+        if (user?.id) {
+            socketService.onNewMessage((newMessage) => {
+                setMessages(prev => [...prev, newMessage]);
+                loadConversations();
+            });
+
+            return () => {
+                socketService.offNewMessage();
+            };
+        }
+    }, [user?.id, loadConversations]);
 
     return {
         conversations,
