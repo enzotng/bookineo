@@ -77,30 +77,28 @@ const Messages: React.FC = () => {
 
     return (
         <div className="h-full flex flex-col bg-white px-6 py-4 rounded-lg border">
-            <div className="border-b">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <MessageCircle className="w-6 h-6 text-blue-500" />
-                            <h1 className="text-2xl font-bold">Messagerie</h1>
-                            {unreadCount > 0 && (
-                                <Badge variant="default" className="ml-2">
-                                    {unreadCount}
-                                </Badge>
-                            )}
-                        </div>
-                    </div>
-
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" onClick={refreshMessages} disabled={loading}>
-                            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                        </Button>
-
-                        <Button onClick={() => setIsComposerOpen(true)} size="sm">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Nouveau message
-                        </Button>
+                        <MessageCircle className="w-6 h-6 text-blue-500" />
+                        <h1 className="text-2xl font-bold">Messagerie</h1>
+                        {unreadCount > 0 && (
+                            <Badge variant="default" className="ml-2">
+                                {unreadCount}
+                            </Badge>
+                        )}
                     </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" onClick={refreshMessages} disabled={loading}>
+                        <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                    </Button>
+
+                    <Button onClick={() => setIsComposerOpen(true)} size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Nouveau message
+                    </Button>
                 </div>
             </div>
 
