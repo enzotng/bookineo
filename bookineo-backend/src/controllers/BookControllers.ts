@@ -14,8 +14,13 @@ class BookController {
             }
 
             const result: QueryResult<Book> = await query(
-                `INSERT INTO books (title, author, publication_year, category_id, price, owner_id, image_url) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+                `WITH created_book AS (
+                    INSERT INTO books (title, author, publication_year, category_id, price, owner_id, image_url)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+                )
+                SELECT cb.*, u.first_name, u.last_name, u.email as owner_email
+                FROM created_book cb
+                LEFT JOIN users u ON cb.owner_id = u.id`,
                 [title, author, publication_year, category_id, price, owner_id, image_url]
             );
 
@@ -36,28 +41,35 @@ class BookController {
             let index = 1;
 
             if (status) {
-                whereClause += ` AND status = $${index++}`;
+                whereClause += ` AND b.status = $${index++}`;
                 params.push(status);
             }
             if (category_id) {
-                whereClause += ` AND category_id = $${index++}`;
+                whereClause += ` AND b.category_id = $${index++}`;
                 params.push(category_id);
             }
             if (author) {
-                whereClause += ` AND author ILIKE $${index++}`;
+                whereClause += ` AND b.author ILIKE $${index++}`;
                 params.push(`%${author}%`);
             }
             if (title) {
-                whereClause += ` AND title ILIKE $${index++}`;
+                whereClause += ` AND b.title ILIKE $${index++}`;
                 params.push(`%${title}%`);
             }
             if (owner_id) {
-                whereClause += ` AND owner_id = $${index++}`;
+                whereClause += ` AND b.owner_id = $${index++}`;
                 params.push(owner_id);
             }
 
-            const countQuery = `SELECT COUNT(*) FROM books ${whereClause}`;
-            const booksQuery = `SELECT * FROM books ${whereClause} ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index}`;
+            const countQuery = `SELECT COUNT(*) FROM books b ${whereClause}`;
+            const booksQuery = `
+                SELECT b.*, u.first_name, u.last_name, u.email as owner_email
+                FROM books b
+                LEFT JOIN users u ON b.owner_id = u.id
+                ${whereClause}
+                ORDER BY b.created_at DESC
+                LIMIT $${index++} OFFSET $${index}
+            `;
 
             params.push(parseInt(limit as string), offset);
 
@@ -86,7 +98,12 @@ class BookController {
         try {
             const { id } = req.params;
 
-            const result: QueryResult<Book> = await query("SELECT * FROM books WHERE id = $1", [id]);
+            const result: QueryResult<Book> = await query(`
+                SELECT b.*, u.first_name, u.last_name, u.email as owner_email
+                FROM books b
+                LEFT JOIN users u ON b.owner_id = u.id
+                WHERE b.id = $1
+            `, [id]);
 
             if (result.rows.length === 0) {
                 res.status(404).json({ error: "Livre non trouvé" });
@@ -105,16 +122,22 @@ class BookController {
             const { title, author, publication_year, category_id, price, status, image_url } = req.body;
 
             const result: QueryResult<Book> = await query(
-                `UPDATE books 
-                 SET title = COALESCE($1, title),
-                     author = COALESCE($2, author),
-                     publication_year = COALESCE($3, publication_year),
-                     category_id = COALESCE($4, category_id),
-                     price = COALESCE($5, price),
-                     status = COALESCE($6, status),
-                     image_url = COALESCE($7, image_url),
-                     updated_at = NOW()
-                 WHERE id = $8 RETURNING *`,
+                `WITH updated_book AS (
+                    UPDATE books
+                    SET title = COALESCE($1, title),
+                        author = COALESCE($2, author),
+                        publication_year = COALESCE($3, publication_year),
+                        category_id = COALESCE($4, category_id),
+                        price = COALESCE($5, price),
+                        status = COALESCE($6, status),
+                        image_url = COALESCE($7, image_url),
+                        updated_at = NOW()
+                    WHERE id = $8
+                    RETURNING *
+                )
+                SELECT ub.*, u.first_name, u.last_name, u.email as owner_email
+                FROM updated_book ub
+                LEFT JOIN users u ON ub.owner_id = u.id`,
                 [title, author, publication_year, category_id, price, status, image_url, id]
             );
 
@@ -133,7 +156,14 @@ class BookController {
         try {
             const { id } = req.params;
 
-            const result: QueryResult<Book> = await query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
+            const result: QueryResult<Book> = await query(`
+                WITH deleted_book AS (
+                    DELETE FROM books WHERE id = $1 RETURNING *
+                )
+                SELECT db.*, u.first_name, u.last_name, u.email as owner_email
+                FROM deleted_book db
+                LEFT JOIN users u ON db.owner_id = u.id
+            `, [id]);
 
             if (result.rows.length === 0) {
                 res.status(404).json({ error: "Livre non trouvé" });
