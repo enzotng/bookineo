@@ -19,7 +19,11 @@ const app = express();
 app.use(helmet());
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: [
+            "http://localhost:5173",
+            "https://bookineo.altelis.com",
+            "https://bookineo-yb4x.onrender.com"
+        ],
         credentials: true,
     })
 );
