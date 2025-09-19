@@ -1,4 +1,6 @@
-export default (sequelize, DataTypes) => {
+import { Sequelize, DataTypes } from "sequelize";
+
+export default (sequelize: Sequelize, DataTypes: DataTypes) => {
     const Book = sequelize.define(
         "Book",
         {
@@ -18,7 +20,7 @@ export default (sequelize, DataTypes) => {
         { tableName: "books", timestamps: false }
     );
 
-    Book.associate = (models) => {
+    Book.associate = (models: any) => {
         Book.belongsTo(models.Category, { foreignKey: "category_id", as: "category" });
         Book.belongsTo(models.User, { foreignKey: "owner_id", as: "owner" });
     };

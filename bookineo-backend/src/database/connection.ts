@@ -1,7 +1,7 @@
-import pkg from "pg";
+import { Pool } from "pg";
+import type { QueryResult, QueryResultRow } from "pg"; // juste pour TypeScript
 import dotenv from "dotenv";
 
-const { Pool } = pkg;
 dotenv.config();
 
 const pool = new Pool({
@@ -11,7 +11,8 @@ const pool = new Pool({
     },
 });
 
-const connectDB = async () => {
+// Connexion à la DB
+export const connectDB = async (): Promise<boolean> => {
     try {
         const client = await pool.connect();
         console.log("Database connection established successfully");
@@ -22,22 +23,20 @@ const connectDB = async () => {
 
         client.release();
         return true;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Database connection failed:", error.message);
         return false;
     }
 };
 
-const query = async (text, params) => {
+// Fonction query avec support générique
+export const query = async <T extends QueryResultRow = any>(text: string, params?: any[]): Promise<QueryResult<T>> => {
     try {
-        const result = await pool.query(text, params);
-        return result;
-    } catch (error) {
+        return await pool.query<T>(text, params);
+    } catch (error: any) {
         console.error("SQL query error:", error.message);
         throw error;
     }
 };
 
-const getPool = () => pool;
-
-export { connectDB, query, getPool };
+export const getPool = (): Pool => pool;

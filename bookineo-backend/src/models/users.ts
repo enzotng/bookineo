@@ -1,4 +1,6 @@
-export default (sequelize, DataTypes) => {
+import { Sequelize, DataTypes } from "sequelize";
+
+export default (sequelize: Sequelize, DataTypes: DataTypes) => {
     const User = sequelize.define(
         "User",
         {
@@ -14,7 +16,7 @@ export default (sequelize, DataTypes) => {
         { tableName: "users", timestamps: false }
     );
 
-    User.associate = (models) => {
+    User.associate = (models: any) => {
         User.hasMany(models.Book, { foreignKey: "owner_id" });
         User.hasMany(models.Rental, { foreignKey: "renter_id" });
         User.hasMany(models.Message, { foreignKey: "sender_id", as: "sentMessages" });

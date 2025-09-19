@@ -1,4 +1,6 @@
-export default (sequelize, DataTypes) => {
+import { Sequelize, DataTypes } from "sequelize";
+
+export default (sequelize: Sequelize, DataTypes: DataTypes) => {
     const Category = sequelize.define(
         "Category",
         {
@@ -10,7 +12,7 @@ export default (sequelize, DataTypes) => {
         { tableName: "categories", timestamps: false }
     );
 
-    Category.associate = (models) => {
+    Category.associate = (models: any) => {
         Category.hasMany(models.Book, { foreignKey: "category_id" });
     };
 

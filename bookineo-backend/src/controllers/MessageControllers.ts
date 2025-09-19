@@ -1,44 +1,46 @@
-import { query } from "../database/connection.js";
-import { emailService } from "../services/emailService.js";
-import { emitToUser } from "../services/socketService.js";
+import type { Request, Response } from "express";
+import { query } from "../database/connection.ts";
+import { emailService } from "../services/emailService.ts";
+import { emitToUser } from "../services/socketService.ts";
+import type { Message } from "../types/Message.ts";
 
 class MessageController {
-    async sendMessage(req, res) {
+    async sendMessage(req: Request & { user?: any }, res: Response): Promise<void> {
         try {
             const { sender_id, recipient_id, subject, content } = req.body;
 
             if (!sender_id || !recipient_id || !content) {
-                return res.status(400).json({ error: "Champs obligatoires manquants" });
+                res.status(400).json({ error: "Champs obligatoires manquants" });
+                return;
             }
 
-            if (req.user.id !== sender_id) {
-                return res.status(403).json({ error: "Accès non autorisé" });
+            if (req.user?.id !== sender_id) {
+                res.status(403).json({ error: "Accès non autorisé" });
+                return;
             }
 
             let finalRecipientId = recipient_id;
 
-            if (recipient_id.includes('@')) {
-                const userResult = await query(
-                    `SELECT id FROM users WHERE email = $1`,
-                    [recipient_id]
-                );
+            if (typeof recipient_id === "string" && recipient_id.includes("@")) {
+                const userResult = await query<{ id: string }>(`SELECT id FROM users WHERE email = $1`, [recipient_id]);
 
                 if (userResult.rows.length === 0) {
-                    return res.status(404).json({ error: "Utilisateur destinataire non trouvé" });
+                    res.status(404).json({ error: "Utilisateur destinataire non trouvé" });
+                    return;
                 }
 
                 finalRecipientId = userResult.rows[0].id;
             }
 
-            const result = await query(
+            const result = await query<Message>(
                 `INSERT INTO messages (sender_id, recipient_id, subject, content)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
+                 VALUES ($1, $2, $3, $4) RETURNING *`,
                 [sender_id, finalRecipientId, subject, content]
             );
 
             const [senderResult, recipientResult] = await Promise.all([
-                query(`SELECT first_name, last_name FROM users WHERE id = $1`, [sender_id]),
-                query(`SELECT email, first_name, last_name FROM users WHERE id = $1`, [finalRecipientId])
+                query<{ first_name: string; last_name: string }>(`SELECT first_name, last_name FROM users WHERE id = $1`, [sender_id]),
+                query<{ email: string; first_name: string; last_name: string }>(`SELECT email, first_name, last_name FROM users WHERE id = $1`, [finalRecipientId]),
             ]);
 
             try {
@@ -50,57 +52,52 @@ class MessageController {
                     const recipientName = `${recipient.first_name} ${recipient.last_name}`;
                     const messagePreview = content.length > 100 ? content.substring(0, 100) : content;
 
-                    await emailService.sendNewMessageNotification(
-                        recipient.email,
-                        recipientName,
-                        senderName,
-                        subject,
-                        messagePreview
-                    );
+                    await emailService.sendNewMessageNotification(recipient.email, recipientName, senderName, subject, messagePreview);
                 }
             } catch (emailError) {
-                console.error('Erreur envoi notification message:', emailError);
+                console.error("Erreur envoi notification message:", emailError);
             }
 
-            emitToUser(finalRecipientId, 'newMessage', {
+            emitToUser(finalRecipientId, "newMessage", {
                 ...result.rows[0],
                 sender: {
                     id: sender_id,
                     first_name: senderResult.rows[0]?.first_name,
-                    last_name: senderResult.rows[0]?.last_name
-                }
+                    last_name: senderResult.rows[0]?.last_name,
+                },
             });
 
             res.status(201).json(result.rows[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async getMessages(req, res) {
+    async getMessages(req: Request & { user?: any }, res: Response): Promise<void> {
         try {
             const { userId } = req.params;
 
-            if (req.user.id !== userId) {
-                return res.status(403).json({ error: "Accès non autorisé" });
+            if (req.user?.id !== userId) {
+                res.status(403).json({ error: "Accès non autorisé" });
+                return;
             }
 
             const result = await query(
                 `SELECT
-          m.*,
-          sender.id as sender_id,
-          sender.first_name as sender_first_name,
-          sender.last_name as sender_last_name,
-          sender.email as sender_email,
-          recipient.id as recipient_id,
-          recipient.first_name as recipient_first_name,
-          recipient.last_name as recipient_last_name,
-          recipient.email as recipient_email
-         FROM messages m
-         JOIN users sender ON m.sender_id = sender.id
-         JOIN users recipient ON m.recipient_id = recipient.id
-         WHERE m.sender_id = $1 OR m.recipient_id = $1
-         ORDER BY m.sent_at DESC`,
+                    m.*,
+                    sender.id as sender_id,
+                    sender.first_name as sender_first_name,
+                    sender.last_name as sender_last_name,
+                    sender.email as sender_email,
+                    recipient.id as recipient_id,
+                    recipient.first_name as recipient_first_name,
+                    recipient.last_name as recipient_last_name,
+                    recipient.email as recipient_email
+                 FROM messages m
+                 JOIN users sender ON m.sender_id = sender.id
+                 JOIN users recipient ON m.recipient_id = recipient.id
+                 WHERE m.sender_id = $1 OR m.recipient_id = $1
+                 ORDER BY m.sent_at DESC`,
                 [userId]
             );
 
@@ -129,42 +126,44 @@ class MessageController {
             }));
 
             res.json(messagesWithUsers);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async getMessageById(req, res) {
+    async getMessageById(req: Request & { user?: any }, res: Response): Promise<void> {
         try {
             const { id } = req.params;
 
             const result = await query(
                 `SELECT
-          m.*,
-          sender.first_name as sender_first_name,
-          sender.last_name as sender_last_name,
-          sender.email as sender_email,
-          recipient.first_name as recipient_first_name,
-          recipient.last_name as recipient_last_name,
-          recipient.email as recipient_email
-         FROM messages m
-         JOIN users sender ON m.sender_id = sender.id
-         JOIN users recipient ON m.recipient_id = recipient.id
-         WHERE m.id = $1`,
+                    m.*,
+                    sender.first_name as sender_first_name,
+                    sender.last_name as sender_last_name,
+                    sender.email as sender_email,
+                    recipient.first_name as recipient_first_name,
+                    recipient.last_name as recipient_last_name,
+                    recipient.email as recipient_email
+                 FROM messages m
+                 JOIN users sender ON m.sender_id = sender.id
+                 JOIN users recipient ON m.recipient_id = recipient.id
+                 WHERE m.id = $1`,
                 [id]
             );
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: "Message non trouvé" });
+                res.status(404).json({ error: "Message non trouvé" });
+                return;
             }
 
             const row = result.rows[0];
 
-            if (req.user.id !== row.sender_id && req.user.id !== row.recipient_id) {
-                return res.status(403).json({ error: "Accès non autorisé" });
+            if (req.user?.id !== row.sender_id && req.user?.id !== row.recipient_id) {
+                res.status(403).json({ error: "Accès non autorisé" });
+                return;
             }
 
-            if (!row.is_read && req.user.id === row.recipient_id) {
+            if (!row.is_read && req.user?.id === row.recipient_id) {
                 await query(`UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`, [id]);
             }
 
@@ -193,51 +192,54 @@ class MessageController {
             };
 
             res.json(messageWithUser);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async deleteMessage(req, res) {
+    async deleteMessage(req: Request & { user?: any }, res: Response): Promise<void> {
         try {
             const { id } = req.params;
 
-            const checkResult = await query(`SELECT sender_id FROM messages WHERE id = $1`, [id]);
+            const checkResult = await query<{ sender_id: string }>(`SELECT sender_id FROM messages WHERE id = $1`, [id]);
 
             if (checkResult.rows.length === 0) {
-                return res.status(404).json({ error: "Message non trouvé" });
+                res.status(404).json({ error: "Message non trouvé" });
+                return;
             }
 
             const message = checkResult.rows[0];
-            if (req.user.id !== message.sender_id) {
-                return res.status(403).json({ error: "Seul l'expéditeur peut supprimer ce message" });
+            if (req.user?.id !== message.sender_id) {
+                res.status(403).json({ error: "Seul l'expéditeur peut supprimer ce message" });
+                return;
             }
 
-            const result = await query(`DELETE FROM messages WHERE id = $1 RETURNING *`, [id]);
+            const result = await query<Message>(`DELETE FROM messages WHERE id = $1 RETURNING *`, [id]);
 
             res.json({ message: "Message supprimé avec succès", deleted: result.rows[0] });
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async getUnreadCount(req, res) {
+    async getUnreadCount(req: Request & { user?: any }, res: Response): Promise<void> {
         try {
             const { userId } = req.params;
 
-            if (req.user.id !== userId) {
-                return res.status(403).json({ error: "Accès non autorisé" });
+            if (req.user?.id !== userId) {
+                res.status(403).json({ error: "Accès non autorisé" });
+                return;
             }
 
-            const result = await query(
+            const result = await query<{ unread_count: string }>(
                 `SELECT COUNT(*) AS unread_count
-         FROM messages
-         WHERE recipient_id = $1 AND is_read = false`,
+                 FROM messages
+                 WHERE recipient_id = $1 AND is_read = false`,
                 [userId]
             );
 
             res.json({ unread: parseInt(result.rows[0].unread_count, 10) });
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

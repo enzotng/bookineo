@@ -1,31 +1,33 @@
-import chatFunctions from "./chatFunctions.js";
+import chatFunctions from "./chatFunctions.ts";
 
 class LMStudioService {
+    baseURL: any;
+
     constructor() {
-        this.baseURL = process.env.LM_STUDIO_URL;
+        this.baseURL = process.env.LM_STUDIO_URL as any;
     }
 
-    async sendMessage(messages) {
+    async sendMessage(messages: any[]): Promise<any> {
         try {
-            const lastMessage = messages[messages.length - 1];
-            const userMessage = lastMessage?.content?.toLowerCase() || "";
+            const lastMessage: any = messages[messages.length - 1];
+            const userMessage: any = lastMessage?.content?.toLowerCase() || "";
 
-            const isBookQuery = this.isBookRelatedQuery(userMessage);
+            const isBookQuery: any = this.isBookRelatedQuery(userMessage);
 
             if (!isBookQuery) {
                 return "Je suis l'assistant Bookineo et je ne peux répondre qu'aux questions concernant les livres, la location, les catégories et les statistiques de notre plateforme. Posez-moi une question sur nos livres disponibles !";
             }
 
-            const data = await chatFunctions.getAllData();
-            const contextData = chatFunctions.formatDataForLLM(data);
+            const data: any = await chatFunctions.getAllData();
+            const contextData: any = chatFunctions.formatDataForLLM(data);
 
             console.log("📚 Données injectées:", {
                 totalBooks: data.books.length,
                 categories: data.categories.length,
-                stats: data.stats
+                stats: data.stats,
             });
 
-            const enhancedMessages = [
+            const enhancedMessages: any = [
                 {
                     role: "system",
                     content: `Tu es l'assistant Bookineo, expert de notre plateforme de location de livres entre particuliers. Tu ne réponds QU'aux questions sur les livres, locations, recherches, prix, catégories et statistiques.
@@ -40,12 +42,12 @@ FORMAT DE RÉPONSE OBLIGATOIRE:
 DONNÉES ACTUELLES DE LA BASE:
 ${contextData}
 
-Utilise ces données pour répondre précisément aux questions. Sois concis et utile.`
+Utilise ces données pour répondre précisément aux questions. Sois concis et utile.`,
                 },
-                ...messages.slice(-3)
+                ...messages.slice(-3),
             ];
 
-            const response = await fetch(`${this.baseURL}/chat/completions`, {
+            const response: any = await fetch(`${this.baseURL}/chat/completions`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -63,34 +65,58 @@ Utilise ces données pour répondre précisément aux questions. Sois concis et 
                 throw new Error(`LM Studio API error: ${response.status}`);
             }
 
-            const responseData = await response.json();
+            const responseData: any = await response.json();
             return responseData.choices[0]?.message?.content || "Je n'ai pas pu traiter votre demande.";
-        } catch (error) {
+        } catch (error: any) {
             console.error("LM Studio API Error:", error);
             throw new Error("Impossible de se connecter au chatbot. Vérifiez que LM Studio est démarré.");
         }
     }
 
-    isBookRelatedQuery(message) {
-        const bookKeywords = [
-            'livre', 'livres', 'book', 'books',
-            'auteur', 'author', 'titre', 'title',
-            'louer', 'location', 'rent', 'rental',
-            'prix', 'price', 'coût', 'cost',
-            'catégorie', 'category', 'genre',
-            'disponible', 'available',
-            'recherche', 'search', 'trouver', 'find',
-            'statistique', 'stats', 'combien',
-            'propriétaire', 'owner',
-            'récent', 'recent', 'nouveau', 'new'
+    isBookRelatedQuery(message: any): any {
+        const bookKeywords: any = [
+            "livre",
+            "livres",
+            "book",
+            "books",
+            "auteur",
+            "author",
+            "titre",
+            "title",
+            "louer",
+            "location",
+            "rent",
+            "rental",
+            "prix",
+            "price",
+            "coût",
+            "cost",
+            "catégorie",
+            "category",
+            "genre",
+            "disponible",
+            "available",
+            "recherche",
+            "search",
+            "trouver",
+            "find",
+            "statistique",
+            "stats",
+            "combien",
+            "propriétaire",
+            "owner",
+            "récent",
+            "recent",
+            "nouveau",
+            "new",
         ];
 
-        return bookKeywords.some(keyword => message.includes(keyword));
+        return bookKeywords.some((keyword: any) => message.includes(keyword));
     }
 
-    async testConnection() {
+    async testConnection(): Promise<any> {
         try {
-            const response = await fetch(`${this.baseURL}/models`, {
+            const response: any = await fetch(`${this.baseURL}/models`, {
                 method: "GET",
             });
             return response.ok;

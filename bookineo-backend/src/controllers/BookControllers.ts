@@ -1,34 +1,38 @@
-import { query } from "../database/connection.js";
+import type { Request, Response } from "express";
+import { query } from "../database/connection.ts";
+import type { QueryResult } from "pg";
+import type { Book } from "../types/Book.ts";
 
 class BookController {
-    async createBook(req, res) {
+    async createBook(req: Request, res: Response): Promise<void> {
         try {
             const { title, author, publication_year, category_id, price, owner_id, image_url } = req.body;
 
             if (!title || !author || !price || !owner_id) {
-                return res.status(400).json({ error: "Champs obligatoires manquants" });
+                res.status(400).json({ error: "Champs obligatoires manquants" });
+                return;
             }
 
-            const result = await query(
+            const result: QueryResult<Book> = await query(
                 `INSERT INTO books (title, author, publication_year, category_id, price, owner_id, image_url) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
                 [title, author, publication_year, category_id, price, owner_id, image_url]
             );
 
             res.status(201).json(result.rows[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async getBooks(req, res) {
+    async getBooks(req: Request, res: Response): Promise<void> {
         try {
-            const { status, category_id, author, title, page = 1, limit = 12 } = req.query;
+            const { status, category_id, author, title, page = "1", limit = "12" } = req.query;
 
-            const offset = (parseInt(page) - 1) * parseInt(limit);
+            const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
 
             let whereClause = "WHERE 1=1";
-            const params = [];
+            const params: any[] = [];
             let index = 1;
 
             if (status) {
@@ -51,89 +55,89 @@ class BookController {
             const countQuery = `SELECT COUNT(*) FROM books ${whereClause}`;
             const booksQuery = `SELECT * FROM books ${whereClause} ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index}`;
 
-            params.push(parseInt(limit), offset);
+            params.push(parseInt(limit as string), offset);
 
-            const [countResult, booksResult] = await Promise.all([
-                query(countQuery, params.slice(0, -2)),
-                query(booksQuery, params)
-            ]);
+            const [countResult, booksResult] = await Promise.all([query(countQuery, params.slice(0, -2)), query(booksQuery, params)]);
 
             const totalBooks = parseInt(countResult.rows[0].count);
-            const totalPages = Math.ceil(totalBooks / parseInt(limit));
+            const totalPages = Math.ceil(totalBooks / parseInt(limit as string));
 
             res.json({
                 books: booksResult.rows,
                 pagination: {
-                    currentPage: parseInt(page),
+                    currentPage: parseInt(page as string),
                     totalPages,
                     totalBooks,
-                    limit: parseInt(limit),
-                    hasNextPage: parseInt(page) < totalPages,
-                    hasPreviousPage: parseInt(page) > 1
-                }
+                    limit: parseInt(limit as string),
+                    hasNextPage: parseInt(page as string) < totalPages,
+                    hasPreviousPage: parseInt(page as string) > 1,
+                },
             });
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async getBookById(req, res) {
+    async getBookById(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
 
-            const result = await query("SELECT * FROM books WHERE id = $1", [id]);
+            const result: QueryResult<Book> = await query("SELECT * FROM books WHERE id = $1", [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: "Livre non trouvé" });
+                res.status(404).json({ error: "Livre non trouvé" });
+                return;
             }
 
             res.json(result.rows[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async updateBook(req, res) {
+    async updateBook(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
             const { title, author, publication_year, category_id, price, status, image_url } = req.body;
 
-            const result = await query(
+            const result: QueryResult<Book> = await query(
                 `UPDATE books 
-         SET title = COALESCE($1, title),
-             author = COALESCE($2, author),
-             publication_year = COALESCE($3, publication_year),
-             category_id = COALESCE($4, category_id),
-             price = COALESCE($5, price),
-             status = COALESCE($6, status),
-             image_url = COALESCE($7, image_url),
-             updated_at = NOW()
-         WHERE id = $8 RETURNING *`,
+                 SET title = COALESCE($1, title),
+                     author = COALESCE($2, author),
+                     publication_year = COALESCE($3, publication_year),
+                     category_id = COALESCE($4, category_id),
+                     price = COALESCE($5, price),
+                     status = COALESCE($6, status),
+                     image_url = COALESCE($7, image_url),
+                     updated_at = NOW()
+                 WHERE id = $8 RETURNING *`,
                 [title, author, publication_year, category_id, price, status, image_url, id]
             );
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: "Livre non trouvé" });
+                res.status(404).json({ error: "Livre non trouvé" });
+                return;
             }
 
             res.json(result.rows[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    async deleteBook(req, res) {
+    async deleteBook(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params;
 
-            const result = await query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
+            const result: QueryResult<Book> = await query("DELETE FROM books WHERE id = $1 RETURNING *", [id]);
 
             if (result.rows.length === 0) {
-                return res.status(404).json({ error: "Livre non trouvé" });
+                res.status(404).json({ error: "Livre non trouvé" });
+                return;
             }
 
             res.json({ message: "Livre supprimé avec succès", deleted: result.rows[0] });
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

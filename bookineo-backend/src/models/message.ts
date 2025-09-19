@@ -1,4 +1,6 @@
-export default (sequelize, DataTypes) => {
+import { Sequelize, DataTypes } from "sequelize";
+
+export default (sequelize: Sequelize, DataTypes: DataTypes) => {
     const Message = sequelize.define(
         "Message",
         {
@@ -15,7 +17,7 @@ export default (sequelize, DataTypes) => {
         { tableName: "messages", timestamps: false }
     );
 
-    Message.associate = (models) => {
+    Message.associate = (models: any) => {
         Message.belongsTo(models.User, { foreignKey: "sender_id", as: "sender" });
         Message.belongsTo(models.User, { foreignKey: "recipient_id", as: "recipient" });
     };

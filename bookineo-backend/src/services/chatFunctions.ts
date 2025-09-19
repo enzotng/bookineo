@@ -1,18 +1,14 @@
-import { query } from "../database/connection.js";
+import { query } from "../database/connection.ts";
 
 class ChatFunctions {
-    async getAllData() {
-        const [books, categories, stats] = await Promise.all([
-            this.getAvailableBooks(),
-            this.getCategories(),
-            this.getStats()
-        ]);
+    async getAllData(): Promise<any> {
+        const [books, categories, stats]: any = await Promise.all([this.getAvailableBooks(), this.getCategories(), this.getStats()]);
 
         return { books, categories, stats, recentRentals: [] };
     }
 
-    async getAvailableBooks() {
-        const result = await query(`
+    async getAvailableBooks(): Promise<any> {
+        const result: any = await query(`
             SELECT b.id, b.title, b.author, b.publication_year, b.price, b.status,
                    c.name as category, CONCAT(u.first_name, ' ', u.last_name) as owner
             FROM books b
@@ -25,13 +21,13 @@ class ChatFunctions {
         return result.rows;
     }
 
-    async getCategories() {
-        const result = await query("SELECT id, name FROM categories ORDER BY name");
+    async getCategories(): Promise<any> {
+        const result: any = await query("SELECT id, name FROM categories ORDER BY name");
         return result.rows;
     }
 
-    async getStats() {
-        const result = await query(`
+    async getStats(): Promise<any> {
+        const result: any = await query(`
             SELECT
                 COUNT(*) as total_books,
                 COUNT(CASE WHEN status = 'available' THEN 1 END) as available_books,
@@ -44,8 +40,8 @@ class ChatFunctions {
         return result.rows[0];
     }
 
-    async getRecentRentals() {
-        const result = await query(`
+    async getRecentRentals(): Promise<any> {
+        const result: any = await query(`
             SELECT b.title, b.author,
                    CONCAT(u1.first_name, ' ', u1.last_name) as owner,
                    CONCAT(u2.first_name, ' ', u2.last_name) as renter,
@@ -60,10 +56,10 @@ class ChatFunctions {
         return result.rows;
     }
 
-    async searchBooks(searchQuery, filters = {}) {
-        const { status = 'available', category_id, limit = 10 } = filters;
+    async searchBooks(searchQuery: any, filters: any = {}): Promise<any> {
+        const { status = "available", category_id, limit = 10 } = filters;
 
-        let queryText = `
+        let queryText: any = `
             SELECT b.id, b.title, b.author, b.publication_year, b.price, b.status,
                    c.name as category, CONCAT(u.first_name, ' ', u.last_name) as owner
             FROM books b
@@ -72,8 +68,8 @@ class ChatFunctions {
             WHERE 1=1
         `;
 
-        const params = [];
-        let paramIndex = 1;
+        const params: any = [];
+        let paramIndex: any = 1;
 
         if (searchQuery) {
             queryText += ` AND (b.title ILIKE $${paramIndex} OR b.author ILIKE $${paramIndex})`;
@@ -96,11 +92,11 @@ class ChatFunctions {
         queryText += ` ORDER BY b.created_at DESC LIMIT $${paramIndex}`;
         params.push(limit);
 
-        const result = await query(queryText, params);
+        const result: any = await query(queryText, params);
         return result.rows;
     }
 
-    formatDataForLLM(data) {
+    formatDataForLLM(data: any): any {
         const { books, categories, stats, recentRentals } = data;
 
         return `
@@ -112,10 +108,13 @@ STATISTIQUES BOOKINEO:
 - Prix min: ${stats.min_price}€, max: ${stats.max_price}€
 
 CATÉGORIES DISPONIBLES:
-${categories.map(c => `- ${c.name}`).join('\n')}
+${categories.map((c: any) => `- ${c.name}`).join("\n")}
 
 LIVRES DISPONIBLES À LA LOCATION:
-${books.slice(0, 15).map(b => `- "${b.title}" par ${b.author} (${b.category || 'Sans catégorie'}) - ${b.price}€ - Propriétaire: ${b.owner}`).join('\n')}
+${books
+    .slice(0, 15)
+    .map((b: any) => `- "${b.title}" par ${b.author} (${b.category || "Sans catégorie"}) - ${b.price}€ - Propriétaire: ${b.owner}`)
+    .join("\n")}
         `.trim();
     }
 }

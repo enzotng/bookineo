@@ -3,8 +3,8 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { createServer } from "http";
-import { connectDB, userRoutes, bookRoutes, categoryRoutes, rentalRoutes, messageRoutes, chatRoutes } from "./src/index.js";
-import { initSocket } from "./src/services/socketService.js";
+import { connectDB, userRoutes, bookRoutes, categoryRoutes, rentalRoutes, messageRoutes, chatRoutes } from "./src/index.ts";
+import { initSocket } from "./src/services/socketService.ts";
 import swaggerUi from "swagger-ui-express";
 import fs from "fs";
 import yaml from "yaml";
@@ -14,14 +14,15 @@ dotenv.config();
 const baseYaml = fs.readFileSync("./openapi-base.yaml", "utf8");
 const openapiDoc = yaml.parse(baseYaml);
 
-
 const app = express();
 
 app.use(helmet());
-app.use(cors({
-    origin: "http://localhost:5173",
-    credentials: true
-}));
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -40,7 +41,7 @@ app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.originalUrl });
 });
 
-app.use((err, _req, res, _next) => {
+app.use((err: any, _req: any, res: any, _next: any) => {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
 });

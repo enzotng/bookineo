@@ -1,22 +1,23 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
+import { Server as HttpServer } from "http";
 
-let io;
-const userSockets = new Map();
+let io: Server<any, any, any, any>;
+const userSockets: Map<string, string> = new Map();
 
-export const initSocket = (server) => {
+export const initSocket = (server: HttpServer): Server<any, any, any, any> => {
     io = new Server(server, {
         cors: {
             origin: "http://localhost:5173",
             methods: ["GET", "POST"],
-            credentials: true
+            credentials: true,
         },
-        transports: ['polling', 'websocket']
+        transports: ["polling", "websocket"],
     });
 
-    io.on("connection", (socket) => {
+    io.on("connection", (socket: Socket<any, any, any, any>) => {
         console.log("Socket connecté:", socket.id);
 
-        socket.on("join", (userId) => {
+        socket.on("join", (userId: string) => {
             console.log("User rejoint:", userId);
             userSockets.set(userId, socket.id);
             socket.join(`user_${userId}`);
@@ -36,10 +37,10 @@ export const initSocket = (server) => {
     return io;
 };
 
-export const emitToUser = (userId, event, data) => {
+export const emitToUser = (userId: string, event: string, data: any) => {
     if (io) {
         io.to(`user_${userId}`).emit(event, data);
     }
 };
 
-export const getIO = () => io;
+export const getIO = (): Server<any, any, any, any> | undefined => io;
