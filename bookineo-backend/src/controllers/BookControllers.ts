@@ -51,6 +51,10 @@ class BookController {
                 whereClause += ` AND title ILIKE $${index++}`;
                 params.push(`%${title}%`);
             }
+            if (owner_id) {
+                whereClause += ` AND owner_id = $${index++}`;
+                params.push(owner_id);
+            }
 
             const countQuery = `SELECT COUNT(*) FROM books ${whereClause}`;
             const booksQuery = `SELECT * FROM books ${whereClause} ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index}`;

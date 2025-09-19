@@ -1,4 +1,5 @@
 export * from "./card";
+export * from "./checkbox";
 export * from "./button";
 export * from "./carousel";
 export * from "./input";

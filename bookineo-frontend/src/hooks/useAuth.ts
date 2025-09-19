@@ -28,13 +28,14 @@ export const useAuthState = () => {
 
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem("authToken");
+            const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
             if (token) {
                 try {
                     const userData = await authAPI.getProfile();
                     setUser(userData);
                 } catch {
                     localStorage.removeItem("authToken");
+                    sessionStorage.removeItem("authToken");
                 }
             }
             setIsLoading(false);
@@ -43,10 +44,11 @@ export const useAuthState = () => {
         initAuth();
     }, []);
 
-    const login = async (data: LoginData) => {
+    const login = async (data: LoginData & { rememberMe?: boolean }) => {
         try {
             const { token } = await authAPI.login(data);
-            localStorage.setItem("authToken", token);
+            const storage = data.rememberMe ? localStorage : sessionStorage;
+            storage.setItem("authToken", token);
             const userData = await authAPI.getProfile();
             setUser(userData);
             toast.success("Connexion réussie !");
@@ -70,12 +72,14 @@ export const useAuthState = () => {
 
     const logout = () => {
         localStorage.removeItem("authToken");
+        sessionStorage.removeItem("authToken");
         setUser(null);
         toast.info("Déconnexion réussie !");
     };
 
     const refreshUser = async () => {
-        if (localStorage.getItem("authToken")) {
+        const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+        if (token) {
             try {
                 const userData = await authAPI.getProfile();
                 setUser(userData);

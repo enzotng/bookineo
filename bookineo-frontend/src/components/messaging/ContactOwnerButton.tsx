@@ -13,6 +13,7 @@ interface ContactOwnerButtonProps {
     className?: string;
     variant?: "default" | "outline" | "secondary" | "ghost";
     size?: "sm" | "default" | "lg";
+    showAlways?: boolean;
 }
 
 export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
@@ -22,6 +23,7 @@ export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
     className = "",
     variant = "outline",
     size = "sm",
+    showAlways = false,
 }) => {
     const { user } = useAuth();
     const { sendMessage } = useMessages();
@@ -36,7 +38,7 @@ export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
         }
     };
 
-    if (!user || user.id === book.owner_id.toString()) {
+    if (!user || (!showAlways && user.id === book.owner_id.toString())) {
         return null;
     }
 

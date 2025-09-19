@@ -41,9 +41,6 @@ export const useMessages = () => {
             setMessages(data);
             setSelectedConversation(participantId);
 
-            const unreadMessages = data.filter(msg => msg.recipient_id === user.id && !msg.is_read);
-            await Promise.all(unreadMessages.map(msg => messagesAPI.markAsRead(msg.id)));
-
             await loadConversations();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erreur lors du chargement");
@@ -122,15 +119,38 @@ export const useMessages = () => {
     useEffect(() => {
         if (user?.id) {
             socketService.onNewMessage((newMessage) => {
-                setMessages(prev => [...prev, newMessage]);
-                loadConversations();
+                if (selectedConversation) {
+                    const isForCurrentConversation =
+                        (newMessage.sender_id === selectedConversation && newMessage.recipient_id === user.id) ||
+                        (newMessage.sender_id === user.id && newMessage.recipient_id === selectedConversation);
+
+                    if (isForCurrentConversation) {
+                        setMessages(prev => {
+                            const messageExists = prev.some(msg => msg.id === newMessage.id);
+                            if (messageExists) return prev;
+                            return [...prev, newMessage];
+                        });
+
+                    }
+                }
+
+                setTimeout(() => loadConversations(), 50);
+            });
+
+            socketService.onMessageRead((data) => {
+                setMessages(prev => prev.map(msg =>
+                    msg.id === data.messageId
+                        ? { ...msg, is_read: true }
+                        : msg
+                ));
             });
 
             return () => {
                 socketService.offNewMessage();
+                socketService.offMessageRead();
             };
         }
-    }, [user?.id, loadConversations]);
+    }, [user?.id, loadConversations, selectedConversation]);
 
     return {
         conversations,

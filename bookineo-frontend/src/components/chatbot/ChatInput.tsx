@@ -29,7 +29,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading, 
     return (
         <div className="flex gap-2 bg-background">
             <Input value={message} onChange={(e) => setMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="Tapez votre message..." disabled={isLoading || disabled} className="flex-1" />
-            <Button onClick={handleSend} disabled={!message.trim() || isLoading || disabled}>
+            <Button onClick={handleSend} disabled={!message.trim() || isLoading || disabled} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700">
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
         </div>

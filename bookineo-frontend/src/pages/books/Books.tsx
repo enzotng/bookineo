@@ -25,16 +25,24 @@ import {
     Skeleton,
     Spinner,
 } from "../../components/ui";
-import { ContactOwnerButton } from "../../components/messaging";
+import { BookCard } from "../../components/books";
+import { FilterPanel } from "../../components/filters";
+import { PageHeader } from "../../components/layout";
+import type { FilterConfig } from "../../components/filters";
+import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Search, BookOpen, Clock, Download } from "lucide-react";
 const Books: React.FC = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [books, setBooks] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [pagination, setPagination] = useState<PaginationInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filters, setFilters] = useState<BookFilters>({ page: 1, limit: 12 });
-    const [searchTitle, setSearchTitle] = useState("");
-    const [searchAuthor, setSearchAuthor] = useState("");
+    const [uiFilters, setUiFilters] = useState<Record<string, any>>({});
 
     const loadBooksAndCategories = async (currentFilters?: BookFilters) => {
         try {
@@ -57,28 +65,24 @@ const Books: React.FC = () => {
         loadBooksAndCategories(filters);
     }, []);
 
-    const handleFilterChange = (key: keyof BookFilters, value: string | number | undefined) => {
-        const newFilters = { ...filters, [key]: value, page: 1 };
-        setFilters(newFilters);
-        loadBooksAndCategories(newFilters);
-    };
-
-    const handleSearch = () => {
-        const searchFilters = {
+    const handleFiltersChange = (newUiFilters: Record<string, any>) => {
+        setUiFilters(newUiFilters);
+        const newFilters = {
             ...filters,
-            title: searchTitle || undefined,
-            author: searchAuthor || undefined,
+            title: newUiFilters.title || undefined,
+            author: newUiFilters.author || undefined,
+            category_id: newUiFilters.category_id ? parseInt(newUiFilters.category_id) : undefined,
+            status: newUiFilters.status || undefined,
             page: 1,
         };
-        setFilters(searchFilters);
-        loadBooksAndCategories(searchFilters);
+        setFilters(newFilters);
+        loadBooksAndCategories(newFilters);
     };
 
     const clearFilters = () => {
         const resetFilters = { page: 1, limit: 12 };
         setFilters(resetFilters);
-        setSearchTitle("");
-        setSearchAuthor("");
+        setUiFilters({});
         loadBooksAndCategories(resetFilters);
     };
 
@@ -88,10 +92,41 @@ const Books: React.FC = () => {
         loadBooksAndCategories(newFilters);
     };
 
+
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return "Non catégorisé";
         const category = categories.find((c) => c.id === categoryId);
         return category?.name || "Non catégorisé";
+    };
+
+    const exportToCsv = () => {
+        const headers = ["Titre", "Auteur", "ISBN", "Catégorie", "Prix (€)", "Statut", "Propriétaire", "Année de publication", "Description"];
+
+        const csvData = books.map((book) => [
+            book.title || "",
+            book.author || "",
+            book.isbn || "",
+            getCategoryName(book.category_id),
+            book.price || "",
+            book.status === "available" ? "Disponible" : book.status === "rented" ? "Loué" : "Indisponible",
+            `${book.first_name || ""} ${book.last_name || ""}`.trim() || "Propriétaire inconnu",
+            book.publication_year || "",
+            book.description || "",
+        ]);
+
+        const csvContent = [headers, ...csvData].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `catalogue-livres-${new Date().toISOString().split("T")[0]}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(`Export CSV généré avec ${books.length} livre${books.length > 1 ? "s" : ""}`);
     };
 
     const getStatusBadgeVariant = (status: Book["status"]) => {
@@ -99,9 +134,9 @@ const Books: React.FC = () => {
             case "available":
                 return "default";
             case "rented":
-                return "secondary";
-            case "unavailable":
                 return "destructive";
+            case "unavailable":
+                return "secondary";
             default:
                 return "outline";
         }
@@ -119,6 +154,43 @@ const Books: React.FC = () => {
                 return status;
         }
     };
+
+    const filterConfigs: FilterConfig[] = [
+        {
+            key: "title",
+            type: "search",
+            label: "Titre",
+            icon: Search,
+            placeholder: "Rechercher par titre...",
+        },
+        {
+            key: "author",
+            type: "text",
+            label: "Auteur",
+            icon: BookOpen,
+            placeholder: "Rechercher par auteur...",
+        },
+        {
+            key: "category_id",
+            type: "select",
+            label: "Catégorie",
+            icon: Clock,
+            placeholder: "Toutes les catégories",
+            options: [{ value: "all", label: "Toutes les catégories" }, ...categories.map((cat) => ({ value: cat.id.toString(), label: cat.name }))],
+        },
+        {
+            key: "status",
+            type: "select",
+            label: "Statut",
+            placeholder: "Tous les statuts",
+            options: [
+                { value: "all", label: "Tous les statuts" },
+                { value: "available", label: "Disponible", icon: <div className="w-2 h-2 bg-emerald-500 rounded-full"></div> },
+                { value: "rented", label: "Loué", icon: <div className="w-2 h-2 bg-red-500 rounded-full"></div> },
+                { value: "unavailable", label: "Indisponible", icon: <div className="w-2 h-2 bg-gray-500 rounded-full"></div> },
+            ],
+        },
+    ];
 
     if (loading) {
         return (
@@ -140,85 +212,42 @@ const Books: React.FC = () => {
     }
 
     return (
-        <div>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-6">Catalogue des livres</h1>
+        <div className="w-full h-full flex flex-col gap-4">
+            <PageHeader
+                title="Catalogue des livres"
+                subtitle="Découvrez et louez des livres"
+                icon={BookOpen}
+                actions={
+                    <Button onClick={exportToCsv} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all" disabled={books.length === 0}>
+                        <Download className="w-4 h-4" />
+                        <span className="hidden sm:inline ml-2">Exporter CSV</span>
+                    </Button>
+                }
+            />
 
-                <Card className="mb-6">
-                    <CardHeader>
-                        <CardTitle>Filtres et recherche</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <Label htmlFor="title-search">Titre</Label>
-                                <Input id="title-search" placeholder="Rechercher par titre..." value={searchTitle} onChange={(e) => setSearchTitle(e.target.value)} />
-                            </div>
+            <FilterPanel
+                title="Filtres et recherche"
+                subtitle="Trouvez le livre parfait"
+                filters={uiFilters}
+                onFiltersChange={handleFiltersChange}
+                filterConfigs={filterConfigs}
+                onClearFilters={clearFilters}
+            />
 
-                            <div>
-                                <Label htmlFor="author-search">Auteur</Label>
-                                <Input id="author-search" placeholder="Rechercher par auteur..." value={searchAuthor} onChange={(e) => setSearchAuthor(e.target.value)} />
-                            </div>
-
-                            <div>
-                                <Label htmlFor="category-filter">Catégorie</Label>
-                                <Select value={filters.category_id?.toString() || "all"} onValueChange={(value) => handleFilterChange("category_id", value === "all" ? undefined : parseInt(value))}>
-                                    <SelectTrigger id="category-filter">
-                                        <SelectValue placeholder="Toutes les catégories" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Toutes les catégories</SelectItem>
-                                        {categories.map((category) => (
-                                            <SelectItem key={category.id} value={category.id.toString()}>
-                                                {category.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="status-filter">Statut</Label>
-                                <Select value={filters.status || "all"} onValueChange={(value) => handleFilterChange("status", value === "all" ? undefined : value)}>
-                                    <SelectTrigger id="status-filter">
-                                        <SelectValue placeholder="Tous les statuts" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Tous les statuts</SelectItem>
-                                        <SelectItem value="available">Disponible</SelectItem>
-                                        <SelectItem value="rented">Loué</SelectItem>
-                                        <SelectItem value="unavailable">Indisponible</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button onClick={handleSearch}>Rechercher</Button>
-                            <Button variant="outline" onClick={clearFilters}>
-                                Effacer les filtres
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="mb-4">
-                <div className="text-sm text-gray-600">
-                    {pagination ? (
-                        <>
-                            {pagination.totalBooks} livre{pagination.totalBooks > 1 ? "s" : ""} trouvé{pagination.totalBooks > 1 ? "s" : ""}
-                            {pagination.totalPages > 1 && (
-                                <span>
-                                    {" "}
-                                    - Page {pagination.currentPage} sur {pagination.totalPages}
-                                </span>
-                            )}
-                        </>
-                    ) : (
-                        `${books.length} livre${books.length > 1 ? "s" : ""} trouvé${books.length > 1 ? "s" : ""}`
-                    )}
-                </div>
+            <div className="text-sm text-gray-600 font-bold">
+                {pagination ? (
+                    <>
+                        {pagination.totalBooks} livre{pagination.totalBooks > 1 ? "s" : ""} trouvé{pagination.totalBooks > 1 ? "s" : ""}
+                        {pagination.totalPages > 1 && (
+                            <span>
+                                {" "}
+                                - Page {pagination.currentPage} sur {pagination.totalPages}
+                            </span>
+                        )}
+                    </>
+                ) : (
+                    `${books.length} livre${books.length > 1 ? "s" : ""} trouvé${books.length > 1 ? "s" : ""}`
+                )}
             </div>
 
             {books.length === 0 ? (
@@ -229,69 +258,16 @@ const Books: React.FC = () => {
                     </Button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {books.map((book) => (
-                        <Card key={book.id} className="hover:shadow-md transition-shadow h-full flex flex-col">
-                            <CardHeader className="pb-4 flex-shrink-0">
-                                <div className="aspect-[3/4] bg-gray-100 rounded-md overflow-hidden relative h-48 w-full mb-3">
-                                    {book.image_url ? (
-                                        <>
-                                            <Skeleton className="absolute inset-0 w-full h-full" />
-                                            <img
-                                                src={book.image_url}
-                                                alt={book.title}
-                                                className="w-full h-full object-cover relative z-10"
-                                                loading="lazy"
-                                                onLoad={(e) => {
-                                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                                    if (skeleton) skeleton.style.display = "none";
-                                                }}
-                                                onError={(e) => {
-                                                    (e.currentTarget as HTMLElement).style.display = "none";
-                                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                                    if (skeleton) skeleton.style.display = "none";
-                                                }}
-                                            />
-                                        </>
-                                    ) : (
-                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-400 text-sm">Pas d'image</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <CardTitle className="text-lg line-clamp-2 min-h-[3.5rem]" title={book.title}>
-                                    {book.title}
-                                </CardTitle>
-                                <div className="text-sm text-gray-600 truncate">par {book.author}</div>
-                                <div className="text-sm text-gray-500 h-5">{book.publication_year || ""}</div>
-                            </CardHeader>
-                            <CardContent className="flex-grow flex flex-col justify-end">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <Badge variant={getStatusBadgeVariant(book.status)}>{getStatusText(book.status)}</Badge>
-                                        <div className="font-semibold text-lg">{book.price}€</div>
-                                    </div>
-
-                                    <div className="text-sm text-gray-600 truncate">{getCategoryName(book.category_id)}</div>
-
-                                    <div className="flex space-x-2 mt-4">
-                                        <Button
-                                            className="flex-1"
-                                            variant={book.status === "available" ? "default" : "secondary"}
-                                            disabled={book.status !== "available"}
-                                        >
-                                            {book.status === "available" ? "Louer" : "Indisponible"}
-                                        </Button>
-
-                                        <ContactOwnerButton
-                                            book={book}
-                                            ownerName="Propriétaire"
-                                            ownerEmail="owner@example.com"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <BookCard
+                            key={book.id}
+                            book={book}
+                            getCategoryName={getCategoryName}
+                            onBookClick={(book) => navigate(`/books/${book.id}`)}
+                            showActions={true}
+                            onRentalSuccess={() => loadBooksAndCategories(filters)}
+                        />
                     ))}
                 </div>
             )}
