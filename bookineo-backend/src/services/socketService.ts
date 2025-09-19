@@ -7,7 +7,11 @@ const userSockets: Map<string, string> = new Map();
 export const initSocket = (server: HttpServer): Server<any, any, any, any> => {
     io = new Server(server, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: [
+                "http://localhost:5173",
+                "https://bookineo.altelis.com",
+                "https://bookineo-yb4x.onrender.com"
+            ],
             methods: ["GET", "POST"],
             credentials: true,
         },
