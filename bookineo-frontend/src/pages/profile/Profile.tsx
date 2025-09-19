@@ -1,6 +1,7 @@
 // src/pages/account/Profile.tsx
 import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { useAuth } from "../../hooks/useAuth";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -182,17 +183,21 @@ const Profile: React.FC = () => {
     setNotifSaving(false);
   };
 
-  const onConfirmDelete = async () => {
-    setDeleting(true);
-    const res = await deleteAccount();
-    setDeleting(false);
-    if (res.ok) {
-      toast.success("Compte supprimé.");
-      navigate("/auth/login");
-    } else {
-      toast.error("La suppression du compte a échoué.");
-    }
-  };
+const { logout } = useAuth();
+const onConfirmDelete = async () => {
+  setDeleting(true);
+  const res = await deleteAccount();
+  setDeleting(false);
+
+  if (res.ok) {
+    logout();
+    setDeleteOpen(false);
+    navigate("/auth/login", { replace: true });
+    toast.success("Compte supprimé.");
+  } else {
+    toast.error("La suppression du compte a échoué.");
+  }
+};
 
   if (loading) {
     return (
