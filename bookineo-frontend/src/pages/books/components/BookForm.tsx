@@ -117,7 +117,7 @@ const BookForm: React.FC<BookFormProps> = ({ categories, initialData, onSubmit, 
                         value={categoryId ? categoryId.toString() : "none"}
                         onValueChange={(value) => setValue("category_id", value === "none" ? "" : parseInt(value))}
                     >
-                        <SelectTrigger className="w-full mt-1 rounded-xl border-gray-200 focus:border-blue-500 shadow-sm bg-white">
+                        <SelectTrigger className="w-full mt-1 px-3 py-2 border rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                             <SelectValue placeholder="Sélectionner une catégorie" />
                         </SelectTrigger>
                         <SelectContent>
@@ -151,7 +151,7 @@ const BookForm: React.FC<BookFormProps> = ({ categories, initialData, onSubmit, 
                 <div>
                     <Label>Statut</Label>
                     <Select value={status || "available"} onValueChange={(value) => setValue("status", value as any)}>
-                        <SelectTrigger className="w-full mt-1 rounded-xl border-gray-200 focus:border-blue-500 shadow-sm bg-white">
+                        <SelectTrigger className="w-full mt-1 px-3 py-2 border rounded-xl border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

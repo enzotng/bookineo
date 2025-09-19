@@ -14,7 +14,7 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, categories, onClose }) 
         const variants = {
             available: "default",
             rented: "secondary",
-            unavailable: "destructive"
+            unavailable: "destructive",
         };
         return variants[status] || "outline";
     };
@@ -23,21 +23,21 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, categories, onClose }) 
         const texts = {
             available: "Disponible",
             rented: "Loué",
-            unavailable: "Indisponible"
+            unavailable: "Indisponible",
         };
         return texts[status] || status;
     };
 
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return "Non catégorisé";
-        return categories.find(c => c.id === categoryId)?.name || "Non catégorisé";
+        return categories.find((c) => c.id === categoryId)?.name || "Non catégorisé";
     };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("fr-FR", {
             year: "numeric",
             month: "long",
-            day: "numeric"
+            day: "numeric",
         });
     };
 
@@ -58,11 +58,7 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, categories, onClose }) 
 
             {book.image_url && (
                 <div className="aspect-[3/4] max-w-48 mx-auto bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                        src={book.image_url}
-                        alt={book.title}
-                        className="w-full h-full object-cover"
-                    />
+                    <img src={book.image_url} alt={book.title} className="w-full h-full object-cover" />
                 </div>
             )}
 
@@ -70,9 +66,7 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, categories, onClose }) 
                 <div className="space-y-3">
                     <div>
                         <h3 className="font-medium text-gray-900 mb-1">Statut</h3>
-                        <Badge variant={getStatusBadgeVariant(book.status)}>
-                            {getStatusText(book.status)}
-                        </Badge>
+                        <Badge variant={getStatusBadgeVariant(book.status)}>{getStatusText(book.status)}</Badge>
                     </div>
 
                     <div>

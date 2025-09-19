@@ -28,7 +28,7 @@ class SocketService {
                 console.log("Socket.io connecté!");
                 this.connectionAttempts = 0;
                 this.socket?.emit("join", userId);
-                toast.success("Connexion temps réel établie");
+                toast.success("Connexion messagerie en temps réel établie");
             });
 
             this.socket.on("connect_error", (error) => {

@@ -302,7 +302,7 @@ const MyBooks: React.FC = () => {
             </Dialog>
 
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Modifier le livre</DialogTitle>
                         <DialogDescription>

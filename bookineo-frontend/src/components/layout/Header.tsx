@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-    Button,
-    Badge,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-    Input
-} from "../ui";
+import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Input } from "../ui";
 import { Bell, Search, MessageCircle, Filter, X, BookOpen, User, Tag, Calendar, SlidersHorizontal } from "lucide-react";
 import { useMessages } from "../../hooks/useMessages";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +22,7 @@ export const Header: React.FC = () => {
         status: "all",
         author: "",
         minYear: "",
-        maxYear: ""
+        maxYear: "",
     });
 
     const searchRef = useRef<HTMLDivElement>(null);
@@ -75,9 +63,9 @@ export const Header: React.FC = () => {
                 const searchFilters = {
                     title: searchQuery.trim() || undefined,
                     author: filters.author || undefined,
-                    category_id: (filters.category !== "all" && filters.category) ? parseInt(filters.category) : undefined,
+                    category_id: filters.category !== "all" && filters.category ? parseInt(filters.category) : undefined,
                     status: (filters.status !== "all" && filters.status) || undefined,
-                    limit: 8
+                    limit: 8,
                 };
 
                 const { booksResponse } = await booksAPI.getBooksAndCategories(searchFilters);
@@ -108,7 +96,7 @@ export const Header: React.FC = () => {
             status: "all",
             author: "",
             minYear: "",
-            maxYear: ""
+            maxYear: "",
         });
         setSearchResults([]);
         setIsSearchOpen(false);
@@ -117,15 +105,19 @@ export const Header: React.FC = () => {
 
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return "Non catégorisé";
-        return categories.find(c => c.id === categoryId)?.name || "Non catégorisé";
+        return categories.find((c) => c.id === categoryId)?.name || "Non catégorisé";
     };
 
     const getStatusText = (status: string) => {
         switch (status) {
-            case "available": return "Disponible";
-            case "rented": return "Loué";
-            case "unavailable": return "Indisponible";
-            default: return status;
+            case "available":
+                return "Disponible";
+            case "rented":
+                return "Loué";
+            case "unavailable":
+                return "Indisponible";
+            default:
+                return status;
         }
     };
 
@@ -135,9 +127,11 @@ export const Header: React.FC = () => {
                 <div className="relative">
                     <div className="flex gap-2">
                         <div className="relative flex-1 group">
-                            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 transition-all duration-200 ${
-                                searchQuery ? 'text-blue-500 scale-110' : 'text-gray-400 group-hover:text-gray-600'
-                            }`} />
+                            <Search
+                                className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 transition-all duration-200 ${
+                                    searchQuery ? "text-blue-500 scale-110" : "text-gray-400 group-hover:text-gray-600"
+                                }`}
+                            />
                             <Input
                                 type="text"
                                 value={searchQuery}
@@ -164,28 +158,20 @@ export const Header: React.FC = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    size="sm"
-                                    className={`px-3 py-2.5 border-gray-200 hover:bg-gray-50 transition-all duration-200 ${
-                                        isAdvancedOpen ? 'bg-blue-50 border-blue-200 text-blue-600' : ''
-                                    }`}
+                                    size="default"
+                                    className={`px-3 py-2.5 border-gray-200 hover:bg-gray-50 transition-all duration-200 ${isAdvancedOpen ? "bg-blue-50 border-blue-200 text-blue-600" : ""}`}
                                 >
-                                    <SlidersHorizontal className={`w-4 h-4 transition-transform duration-200 ${
-                                        isAdvancedOpen ? 'rotate-180' : ''
-                                    }`} />
+                                    <SlidersHorizontal className={`w-4 h-4 transition-transform duration-200 ${isAdvancedOpen ? "rotate-180" : ""}`} />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                className="w-[720px] p-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
-                                align="end"
-                                side="bottom"
-                            >
+                            <DropdownMenuContent className="w-[720px] p-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200" align="end" side="bottom">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Auteur</label>
                                         <Input
                                             type="text"
                                             value={filters.author}
-                                            onChange={(e) => setFilters(prev => ({ ...prev, author: e.target.value }))}
+                                            onChange={(e) => setFilters((prev) => ({ ...prev, author: e.target.value }))}
                                             placeholder="Nom de l'auteur"
                                             className="h-9 text-sm transition-all duration-150"
                                         />
@@ -193,18 +179,14 @@ export const Header: React.FC = () => {
 
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Catégorie</label>
-                                        <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                                        <Select value={filters.category} onValueChange={(value) => setFilters((prev) => ({ ...prev, category: value }))}>
                                             <SelectTrigger className="h-9 text-sm transition-all duration-150">
                                                 <SelectValue placeholder="Toutes" />
                                             </SelectTrigger>
                                             <SelectContent className="animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-150">
                                                 <SelectItem value="all">Toutes les catégories</SelectItem>
                                                 {categories.map((category) => (
-                                                    <SelectItem
-                                                        key={category.id}
-                                                        value={category.id.toString()}
-                                                        className="transition-colors duration-150"
-                                                    >
+                                                    <SelectItem key={category.id} value={category.id.toString()} className="transition-colors duration-150">
                                                         {category.name}
                                                     </SelectItem>
                                                 ))}
@@ -214,7 +196,7 @@ export const Header: React.FC = () => {
 
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Statut</label>
-                                        <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
+                                        <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}>
                                             <SelectTrigger className="h-9 text-sm transition-all duration-150">
                                                 <SelectValue placeholder="Tous" />
                                             </SelectTrigger>
@@ -247,7 +229,7 @@ export const Header: React.FC = () => {
                                         <Input
                                             type="number"
                                             value={filters.minYear}
-                                            onChange={(e) => setFilters(prev => ({ ...prev, minYear: e.target.value }))}
+                                            onChange={(e) => setFilters((prev) => ({ ...prev, minYear: e.target.value }))}
                                             placeholder="1900"
                                             className="h-9 text-sm transition-all duration-150"
                                         />
@@ -258,7 +240,7 @@ export const Header: React.FC = () => {
                                         <Input
                                             type="number"
                                             value={filters.maxYear}
-                                            onChange={(e) => setFilters(prev => ({ ...prev, maxYear: e.target.value }))}
+                                            onChange={(e) => setFilters((prev) => ({ ...prev, maxYear: e.target.value }))}
                                             placeholder="2024"
                                             className="h-9 text-sm transition-all duration-150"
                                         />
@@ -278,7 +260,7 @@ export const Header: React.FC = () => {
                             ) : searchResults.length > 0 ? (
                                 <div className="p-2">
                                     <div className="text-xs text-gray-500 px-3 py-2 border-b animate-in slide-in-from-left-2 duration-300">
-                                        {searchResults.length} résultat{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
+                                        {searchResults.length} résultat{searchResults.length > 1 ? "s" : ""} trouvé{searchResults.length > 1 ? "s" : ""}
                                     </div>
                                     {searchResults.map((book, index) => (
                                         <div
@@ -289,11 +271,7 @@ export const Header: React.FC = () => {
                                         >
                                             <div className="w-12 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 hover:shadow-md">
                                                 {book.image_url ? (
-                                                    <img
-                                                        src={book.image_url}
-                                                        alt={book.title}
-                                                        className="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105"
-                                                    />
+                                                    <img src={book.image_url} alt={book.title} className="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105" />
                                                 ) : (
                                                     <BookOpen className="w-6 h-6 text-blue-500 transition-colors duration-200" />
                                                 )}
@@ -310,10 +288,11 @@ export const Header: React.FC = () => {
                                                         <span className="text-xs text-gray-500">{getCategoryName(book.category_id)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                                                            book.status === "available" ? "bg-emerald-400" :
-                                                            book.status === "rented" ? "bg-red-400" : "bg-gray-400"
-                                                        }`}></div>
+                                                        <div
+                                                            className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                                                                book.status === "available" ? "bg-emerald-400" : book.status === "rented" ? "bg-red-400" : "bg-gray-400"
+                                                            }`}
+                                                        ></div>
                                                         <span className="text-xs text-gray-500">{getStatusText(book.status)}</span>
                                                     </div>
                                                 </div>
@@ -334,7 +313,7 @@ export const Header: React.FC = () => {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
-                                                navigate('/books', { state: { searchQuery, filters } });
+                                                navigate("/books", { state: { searchQuery, filters } });
                                                 setIsSearchOpen(false);
                                             }}
                                             className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-100 transition-all duration-200 hover:scale-[1.02] font-medium"
@@ -343,7 +322,7 @@ export const Header: React.FC = () => {
                                         </Button>
                                     </div>
                                 </div>
-                            ) : (searchQuery || filters.author || filters.category !== "all" || filters.status !== "all" || filters.minYear || filters.maxYear) ? (
+                            ) : searchQuery || filters.author || filters.category !== "all" || filters.status !== "all" || filters.minYear || filters.maxYear ? (
                                 <div className="p-6 text-center text-gray-500 animate-in fade-in-0 zoom-in-95 duration-300">
                                     <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300 animate-pulse" />
                                     <p className="text-sm animate-in slide-in-from-bottom-2 duration-300">Aucun livre trouvé</p>
@@ -364,15 +343,6 @@ export const Header: React.FC = () => {
                                 {unreadCount > 99 ? "99+" : unreadCount}
                             </Badge>
                         )}
-                    </Button>
-                </div>
-
-                <div className="relative">
-                    <Button variant="ghost" size="sm" className="border border-gray-200 rounded-lg relative hover:bg-gray-100">
-                        <Bell className="h-5 w-5" />
-                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center">
-                            3
-                        </Badge>
                     </Button>
                 </div>
             </div>
