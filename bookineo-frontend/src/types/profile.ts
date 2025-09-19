@@ -10,6 +10,7 @@ export interface UserProfile {
     avatar_url?: string;
     created_at: string; // ISO datetime
     updated_at: string; // ISO datetime
+    newsletter?: boolean;
 }
 
 export interface UpdateProfileRequest {
@@ -17,6 +18,7 @@ export interface UpdateProfileRequest {
     last_name?: string;
     email?: string;
     birth_date?: string; // ISO date (YYYY-MM-DD)
+    newsletter?: boolean;
 }
 
 export interface PreferencesRequest {

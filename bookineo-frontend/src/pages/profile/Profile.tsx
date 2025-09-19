@@ -22,7 +22,7 @@ const profileSchema = z.object({
   birthDate: z.string().refine(v => !Number.isNaN(Date.parse(v)), "Date invalide"),
   notificationsEmail: z.boolean().default(false),
 });
-type ProfileForm = z.infer<typeof profileSchema>;
+type ProfileForm = z.output<typeof profileSchema>;
 
 /* ========= Mapping API <-> Form ========= */
 function mapFromApi(p: UserProfile): ProfileForm {
@@ -31,15 +31,16 @@ function mapFromApi(p: UserProfile): ProfileForm {
     lastName: p.last_name ?? "",
     email: p.email ?? "",
     birthDate: p.birth_date ? p.birth_date.slice(0, 10) : "",
-    notificationsEmail: (p as any).notifications_email ?? false,
+    notificationsEmail: p.newsletter ?? false,
   };
 }
 
-function mapToApi(payload: Omit<ProfileForm, "notificationsEmail">): UpdateProfileRequest {
+function mapToApi(payload: Pick<ProfileForm, "firstName" | "lastName" | "birthDate" | "notificationsEmail">): UpdateProfileRequest {
   return {
     first_name: payload.firstName,
-    last_name: payload.lastName,
+    last_name:  payload.lastName,
     birth_date: payload.birthDate,
+    newsletter: payload.notificationsEmail,
   };
 }
 
@@ -49,7 +50,7 @@ async function getProfile(): Promise<ProfileForm> {
   return mapFromApi(profile);
 }
 
-async function updateProfile(data: Omit<ProfileForm, "notificationsEmail">) {
+async function updateProfile(data: Pick<ProfileForm, "firstName" | "lastName" | "birthDate" | "notificationsEmail">) {
   try {
     const body = mapToApi(data);
     const updated = await profileAPI.updateProfile(body);
@@ -59,10 +60,10 @@ async function updateProfile(data: Omit<ProfileForm, "notificationsEmail">) {
   }
 }
 
-async function updateEmailNotif(enabled: boolean) {
+async function updateNewsletter(enabled: boolean) {
   try {
-    await profileAPI.updateEmailNotifications(enabled);
-    return { ok: true };
+    const updated = await profileAPI.updateProfile({ newsletter: enabled });
+    return { ok: true, data: mapFromApi(updated) as ProfileForm };
   } catch {
     return { ok: false };
   }
@@ -158,30 +159,39 @@ const Profile: React.FC = () => {
     })();
   }, [reset]);
 
-  const onSubmit: SubmitHandler<ProfileForm> = async (values) => {
-    const { notificationsEmail: _ignore, ...payload } = values;
-    const res = await updateProfile(payload);
-    if (res.ok) {
-      if (res.data) reset(res.data);
-      toast.success("Profil mis à jour.");
-      setEditMode(false);
-    } else {
-      toast.error("Échec de la mise à jour.");
-    }
-  };
+const onSubmit: SubmitHandler<ProfileForm> = async (values) => {
+  const res = await updateProfile({
+    firstName: values.firstName,
+    lastName: values.lastName,
+    birthDate: values.birthDate,
+    notificationsEmail: values.notificationsEmail,
+  });
 
-  const onToggleNotif = async () => {
-    setNotifSaving(true);
-    const next = !notificationsEmail;
-    const res = await updateEmailNotif(next);
-    if (res.ok) {
-      setValue("notificationsEmail", next, { shouldDirty: false });
-      toast.success(next ? "Notifications activées." : "Notifications désactivées.");
+  if (res.ok) {
+    if (res.data) reset(res.data);
+    toast.success("Profil mis à jour.");
+    setEditMode(false);
+  } else {
+    toast.error("Échec de la mise à jour.");
+  }
+};
+
+const onToggleNotif = async () => {
+  setNotifSaving(true);
+  const next = !notificationsEmail;
+  const res = await updateNewsletter(next);
+  if (res.ok) {
+    if (res.data) {
+      reset(res.data);
     } else {
-      toast.error("Échec de la mise à jour des notifications.");
+      setValue("notificationsEmail", next, { shouldDirty: false });
     }
-    setNotifSaving(false);
-  };
+    toast.success(next ? "Newsletter activée." : "Newsletter désactivée.");
+  } else {
+    toast.error("Échec de la mise à jour des notifications.");
+  }
+  setNotifSaving(false);
+};
 
 const { logout } = useAuth();
 const onConfirmDelete = async () => {
@@ -321,13 +331,9 @@ const onConfirmDelete = async () => {
 
           {/* Notifications */}
           <Card>
-            <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-              <CardDescription>Activer les notifications par mail.</CardDescription>
-            </CardHeader>
             <CardContent className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Notifications par mail</p>
+                <p className="font-medium">Activer la newsletter et les notifications</p>
                 <p className="text-sm text-muted-foreground">Emprunts, retours, retards et nouveautés.</p>
               </div>
               <div className="flex items-center gap-3">
