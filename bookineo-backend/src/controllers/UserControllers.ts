@@ -113,7 +113,7 @@ class UserController {
         }
     }
 
-    async resetPassword(req: Request, res: Response): Promise<void> {
+    async requestPasswordReset(req: Request, res: Response): Promise<void> {
         try {
             const { email } = req.body;
 
@@ -122,18 +122,74 @@ class UserController {
                 return;
             }
 
-            // Vérifie si l'utilisateur existe
             const userResult = await query<User>("SELECT * FROM users WHERE email = $1", [email]);
             if (userResult.rows.length === 0) {
-                res.status(404).json({ error: "Utilisateur non trouvé" });
+                res.json({ message: "Si cet email existe, un lien de réinitialisation a été envoyé" });
                 return;
             }
 
             const user = userResult.rows[0];
 
-            await emailService.sendPasswordReset(user.email, user.first_name, ""); // on peut laisser resetToken vide
+            const resetToken = jwt.sign(
+                { userId: user.id, email: user.email, type: 'password_reset' },
+                process.env.JWT_SECRET!,
+                { expiresIn: '1h' }
+            );
 
-            res.json({ message: "Email de réinitialisation envoyé" });
+            await query(
+                "UPDATE users SET reset_token = $1, reset_token_expires = NOW() + INTERVAL '1 hour' WHERE id = $2",
+                [resetToken, user.id]
+            );
+
+            await emailService.sendPasswordReset(user.email, user.first_name, resetToken);
+
+            res.json({ message: "Si cet email existe, un lien de réinitialisation a été envoyé" });
+        } catch (error: any) {
+            console.error("Erreur requestPasswordReset:", error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async resetPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { token, newPassword } = req.body;
+
+            if (!token || !newPassword) {
+                res.status(400).json({ error: "Token et nouveau mot de passe obligatoires" });
+                return;
+            }
+
+            let decoded: any;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+            } catch (error) {
+                res.status(400).json({ error: "Token invalide ou expiré" });
+                return;
+            }
+
+            if (decoded.type !== 'password_reset') {
+                res.status(400).json({ error: "Token invalide" });
+                return;
+            }
+
+            const userResult = await query<User>(
+                "SELECT * FROM users WHERE id = $1 AND email = $2 AND reset_token = $3 AND reset_token_expires > NOW()",
+                [decoded.userId, decoded.email, token]
+            );
+
+            if (userResult.rows.length === 0) {
+                res.status(400).json({ error: "Token invalide ou expiré" });
+                return;
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            await query(
+                "UPDATE users SET password = $1, reset_token = NULL, reset_token_expires = NULL, updated_at = NOW() WHERE id = $2",
+                [hashedPassword, decoded.userId]
+            );
+
+            res.json({ message: "Mot de passe réinitialisé avec succès" });
         } catch (error: any) {
             console.error("Erreur resetPassword:", error);
             res.status(500).json({ error: error.message });
