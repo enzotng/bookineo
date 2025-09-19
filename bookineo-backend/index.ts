@@ -65,7 +65,7 @@ const startServer = async () => {
     initSocket(server);
 
     server.listen(PORT, () => {
-        console.log(`Bookineo server running on http://localhost:${PORT}`);
+        console.log(`Bookineo server running on port : ${PORT}`);
         console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
     });
 };
