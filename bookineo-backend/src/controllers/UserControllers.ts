@@ -112,6 +112,33 @@ class UserController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async resetPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                res.status(400).json({ error: "Email obligatoire" });
+                return;
+            }
+
+            // Vérifie si l'utilisateur existe
+            const userResult = await query<User>("SELECT * FROM users WHERE email = $1", [email]);
+            if (userResult.rows.length === 0) {
+                res.status(404).json({ error: "Utilisateur non trouvé" });
+                return;
+            }
+
+            const user = userResult.rows[0];
+
+            await emailService.sendPasswordReset(user.email, user.first_name, ""); // on peut laisser resetToken vide
+
+            res.json({ message: "Email de réinitialisation envoyé" });
+        } catch (error: any) {
+            console.error("Erreur resetPassword:", error);
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 export default new UserController();
