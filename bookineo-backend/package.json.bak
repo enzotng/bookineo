@@ -1,14 +1,14 @@
 {
   "name": "bookineo-backend",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "type": "module",
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon --exec ts-node index.ts",
-    "build": "echo 'TypeScript compilation skipped - using ts-node in production'",
-    "start": "ts-node index.ts",
-    "start:dev": "ts-node index.ts",
+    "dev": "tsx watch index.ts",
+    "build": "echo 'TypeScript compilation skipped - using tsx in production'",
+    "start": "tsx index.ts",
+    "start:dev": "tsx index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,9 +25,10 @@
     "resend": "^6.1.0",
     "socket.io": "^4.8.1",
     "swagger-ui-express": "^5.0.1",
-    "yaml": "^2.8.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
