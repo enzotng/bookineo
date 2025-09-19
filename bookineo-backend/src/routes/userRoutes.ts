@@ -12,6 +12,8 @@ router.post("/login", (req: Request, res: Response) => userControllers.login(req
 router.get("/profile", authenticateToken, (req: any, res: Response) => userControllers.getProfile(req, res));
 router.put("/profile", authenticateToken, (req: any, res: Response) => userControllers.updateProfile(req, res));
 router.delete("/", authenticateToken, (req: any, res: Response) => userControllers.deleteUser(req, res));
+
+router.post("/request-password-reset", (req: Request, res: Response) => userControllers.requestPasswordReset(req, res));
 router.post("/reset-password", (req: Request, res: Response) => userControllers.resetPassword(req, res));
 
 export default router;

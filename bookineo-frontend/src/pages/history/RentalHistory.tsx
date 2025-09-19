@@ -232,7 +232,7 @@ const RentalHistory: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <PageHeader
                 title="Historique des locations"
                 subtitle={`${rentals.length} location${rentals.length !== 1 ? 's' : ''} au total`}

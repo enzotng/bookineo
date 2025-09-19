@@ -104,11 +104,18 @@ const Login: React.FC = () => {
                             {isSubmitting ? "Connexion..." : "Se connecter"}
                         </Button>
 
-                        <div className="text-center text-sm">
-                            <span className="text-muted-foreground">Pas encore de compte ? </span>
-                            <Link to="/auth/register" className="text-blue-600 hover:underline font-medium">
-                                Créer un compte
-                            </Link>
+                        <div className="text-center text-sm space-y-2">
+                            <div>
+                                <Link to="/auth/forgot-password" className="text-blue-600 hover:underline font-medium">
+                                    Mot de passe oublié ?
+                                </Link>
+                            </div>
+                            <div>
+                                <span className="text-muted-foreground">Pas encore de compte ? </span>
+                                <Link to="/auth/register" className="text-blue-600 hover:underline font-medium">
+                                    Créer un compte
+                                </Link>
+                            </div>
                         </div>
                     </form>
                 </CardContent>

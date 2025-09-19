@@ -212,7 +212,7 @@ const Books: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <PageHeader
                 title="Catalogue des livres"
                 subtitle="Découvrez et louez des livres"

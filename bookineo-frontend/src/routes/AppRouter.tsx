@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "../components/auth/AuthProvider";
 import { useAuth } from "../hooks/useAuth";
-import { Login, Register, Home } from "../pages";
+import { Login, Register, ForgotPassword, ResetPassword, Home } from "../pages";
 import { Books, MyBooks, RentedBooks, BookDetails } from "../pages/books";
 import { Profile } from "../pages/profile";
 import Messages from "../pages/messages";
@@ -31,6 +31,8 @@ const AppRoutes: React.FC = () => {
                 <>
                     <Route path="/auth/login" element={<Login />} />
                     <Route path="/auth/register" element={<Register />} />
+                    <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/auth/reset-password" element={<ResetPassword />} />
                     <Route path="*" element={<Navigate to="/auth/login" replace />} />
                 </>
             ) : (

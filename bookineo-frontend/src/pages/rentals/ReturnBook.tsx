@@ -183,7 +183,7 @@ const ReturnBook: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <PageHeader
                 title="Retourner un livre"
                 subtitle={`${activeRentals.length} livre${activeRentals.length !== 1 ? 's' : ''} à retourner`}
