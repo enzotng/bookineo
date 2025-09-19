@@ -166,6 +166,11 @@ class MessageController {
 
             if (!row.is_read && req.user.id === row.recipient_id) {
                 await query(`UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`, [id]);
+
+                emitToUser(row.sender_id, 'messageRead', {
+                    messageId: id,
+                    readAt: new Date().toISOString()
+                });
             }
 
             const messageWithUser = {
@@ -216,6 +221,40 @@ class MessageController {
             const result = await query(`DELETE FROM messages WHERE id = $1 RETURNING *`, [id]);
 
             res.json({ message: "Message supprimé avec succès", deleted: result.rows[0] });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async markAsRead(req, res) {
+        try {
+            const { id } = req.params;
+
+            const messageResult = await query(
+                `SELECT sender_id, recipient_id, is_read FROM messages WHERE id = $1`,
+                [id]
+            );
+
+            if (messageResult.rows.length === 0) {
+                return res.status(404).json({ error: "Message non trouvé" });
+            }
+
+            const message = messageResult.rows[0];
+
+            if (req.user.id !== message.recipient_id) {
+                return res.status(403).json({ error: "Accès non autorisé" });
+            }
+
+            if (!message.is_read) {
+                await query(`UPDATE messages SET is_read = true, updated_at = NOW() WHERE id = $1`, [id]);
+
+                emitToUser(message.sender_id, 'messageRead', {
+                    messageId: id,
+                    readAt: new Date().toISOString()
+                });
+            }
+
+            res.json({ message: "Message marqué comme lu", id, is_read: true });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }

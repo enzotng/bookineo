@@ -23,7 +23,7 @@ class BookController {
 
     async getBooks(req, res) {
         try {
-            const { status, category_id, author, title, page = 1, limit = 12 } = req.query;
+            const { status, category_id, author, title, owner_id, page = 1, limit = 12 } = req.query;
 
             const offset = (parseInt(page) - 1) * parseInt(limit);
 
@@ -47,16 +47,17 @@ class BookController {
                 whereClause += ` AND title ILIKE $${index++}`;
                 params.push(`%${title}%`);
             }
+            if (owner_id) {
+                whereClause += ` AND owner_id = $${index++}`;
+                params.push(owner_id);
+            }
 
             const countQuery = `SELECT COUNT(*) FROM books ${whereClause}`;
             const booksQuery = `SELECT * FROM books ${whereClause} ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index}`;
 
             params.push(parseInt(limit), offset);
 
-            const [countResult, booksResult] = await Promise.all([
-                query(countQuery, params.slice(0, -2)),
-                query(booksQuery, params)
-            ]);
+            const [countResult, booksResult] = await Promise.all([query(countQuery, params.slice(0, -2)), query(booksQuery, params)]);
 
             const totalBooks = parseInt(countResult.rows[0].count);
             const totalPages = Math.ceil(totalBooks / parseInt(limit));
@@ -69,8 +70,8 @@ class BookController {
                     totalBooks,
                     limit: parseInt(limit),
                     hasNextPage: parseInt(page) < totalPages,
-                    hasPreviousPage: parseInt(page) > 1
-                }
+                    hasPreviousPage: parseInt(page) > 1,
+                },
             });
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -99,7 +100,7 @@ class BookController {
             const { title, author, publication_year, category_id, price, status, image_url } = req.body;
 
             const result = await query(
-                `UPDATE books 
+                `UPDATE books
          SET title = COALESCE($1, title),
              author = COALESCE($2, author),
              publication_year = COALESCE($3, publication_year),
