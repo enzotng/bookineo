@@ -4,6 +4,7 @@ import { AuthProvider } from "../components/auth/AuthProvider";
 import { useAuth } from "../hooks/useAuth";
 import { Login, Register, Home } from "../pages";
 import { Books } from "../pages/books";
+import {Profile} from "../pages/profile";
 import Messages from "../pages/messages";
 import { ChatBot } from "../components/chatbot";
 import { Layout } from "../components/layout";
@@ -38,6 +39,7 @@ const AppRoutes: React.FC = () => {
                             <Route path="/books" element={<Books />} />
                             <Route path="/messages" element={<Messages />} />
                             <Route path="*" element={<Navigate to="/home" replace />} />
+                            <Route path="/profile" element={<Profile />} />
                         </Routes>
                         <ChatBot />
                     </Layout>
