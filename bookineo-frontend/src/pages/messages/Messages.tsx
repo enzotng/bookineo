@@ -130,7 +130,7 @@ const Messages: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">

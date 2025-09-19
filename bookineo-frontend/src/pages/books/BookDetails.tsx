@@ -86,7 +86,7 @@ const BookDetails: React.FC = () => {
 
     if (!book) {
         return (
-            <div className="w-full h-full flex flex-col gap-4">
+            <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
                 <PageHeader
                     title="Livre non trouvé"
                     subtitle="Ce livre n'existe pas ou a été supprimé"
@@ -104,7 +104,7 @@ const BookDetails: React.FC = () => {
     const canRent = user && !isOwner && book.status === "available";
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <Button
                 variant="ghost"
                 onClick={() => navigate(-1)}

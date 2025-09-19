@@ -1,2 +1,2 @@
-export { Login, Register } from "./auth";
+export { Login, Register, ForgotPassword, ResetPassword } from "./auth";
 export { default as Home } from "./Home";

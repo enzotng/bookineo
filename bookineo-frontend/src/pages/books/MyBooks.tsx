@@ -208,7 +208,7 @@ const MyBooks: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <PageHeader
                 title="Mes livres"
                 subtitle={`Gérez votre collection de ${totalBooks} livre${totalBooks !== 1 ? 's' : ''}`}

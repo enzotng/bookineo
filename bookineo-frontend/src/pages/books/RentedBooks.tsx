@@ -156,7 +156,7 @@ const RentedBooks: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
             <PageHeader
                 title="Livres loués"
                 subtitle={`Vos ${totalRentals} livre${totalRentals !== 1 ? 's' : ''} actuellement loué${totalRentals !== 1 ? 's' : ''}`}
