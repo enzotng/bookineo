@@ -27,7 +27,7 @@ class BookController {
 
     async getBooks(req: Request, res: Response): Promise<void> {
         try {
-            const { status, category_id, author, title, page = "1", limit = "12" } = req.query;
+            const { status, category_id, author, title, page = "1", limit = "12", owner_id } = req.query;
 
             const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
 

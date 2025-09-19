@@ -91,22 +91,25 @@ class RentalController {
     async getRentalByUser(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.params.id;
-            const rentals: QueryResult<{
-                book_id: string;
-                book_title: string;
-                rental_date: Date;
-                status: string;
-                comment: string | null;
-            }> = await query(
-                `
-                SELECT 
-                    r.book_id, 
-                    b.title AS book_title, 
-                    r.rental_date, 
-                    r.status, 
-                    r.comment
+            const rentals: QueryResult<Rental> = await query(
+                `SELECT
+                    r.id,
+                    r.book_id,
+                    r.renter_id,
+                    r.rental_date,
+                    r.expected_return_date,
+                    r.actual_return_date,
+                    r.status,
+                    r.comment,
+                    b.title AS book_title,
+                    b.author AS book_author,
+                    b.image_url AS book_image_url,
+                    b.category_id,
+                    u.first_name,
+                    u.last_name
                 FROM rentals r
                 JOIN books b ON r.book_id = b.id
+                JOIN users u ON r.renter_id = u.id
                 WHERE r.renter_id = $1
                 ORDER BY r.rental_date DESC`,
                 [userId]
