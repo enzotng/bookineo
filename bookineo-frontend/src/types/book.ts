@@ -9,6 +9,10 @@ export interface Book {
     status: 'available' | 'rented' | 'unavailable';
     owner_id: number;
     image_url?: string;
+    description?: string;
+    first_name?: string;
+    last_name?: string;
+    owner_email?: string;
     created_at: string;
     updated_at: string;
 }

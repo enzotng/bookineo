@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Badge } from "../ui";
-import { BookOpen, Edit, Trash2, MessageCircle } from "lucide-react";
+import { BookOpen, Edit, Trash2 } from "lucide-react";
 import { ContactOwnerButton } from "../messaging";
 import { useAuth } from "../../hooks/useAuth";
 import { rentalsAPI } from "../../api/rentals";
@@ -17,6 +17,10 @@ interface BookCardProps {
     deleteAction?: {
         onClick: (book: Book) => void;
     };
+    primaryAction?: {
+        label: string;
+        onClick: () => void | Promise<void>;
+    };
     getCategoryName?: (categoryId?: number) => string;
     overlays?: {
         topRight?: React.ReactNode;
@@ -32,9 +36,9 @@ export const BookCard: React.FC<BookCardProps> = ({
     onBookClick,
     editAction,
     deleteAction,
+    primaryAction,
     getCategoryName,
     overlays,
-    customHeight,
     showActions = true,
     onRentalSuccess
 }) => {
