@@ -451,18 +451,53 @@ paths:
     put:
       tags: [Users]
       summary: Mettre à jour mon profil
+      description: Met à jour les champs `first_name`, `last_name`, `birth_date` de l'utilisateur connecté.
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/UpdateProfileInput' }
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                birth_date:
+                  type: string
+                  format: date
+              required: [first_name, last_name, birth_date]
       responses:
         '200':
-          description: OK
+          description: Profil mis à jour
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/UserPublic' }
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  birth_date:
+                    type: string
+                    format: date
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/users:
     delete:
       tags: [Users]

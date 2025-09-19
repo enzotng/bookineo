@@ -4,6 +4,7 @@ import { AuthProvider } from "../components/auth/AuthProvider";
 import { useAuth } from "../hooks/useAuth";
 import { Login, Register, Home } from "../pages";
 import { Books, MyBooks, RentedBooks, BookDetails } from "../pages/books";
+import { Profile } from "../pages/profile";
 import Messages from "../pages/messages";
 import { RentalHistory } from "../pages/history";
 import { ReturnBook } from "../pages/rentals";
@@ -33,23 +34,27 @@ const AppRoutes: React.FC = () => {
                     <Route path="*" element={<Navigate to="/auth/login" replace />} />
                 </>
             ) : (
-                <Route path="/*" element={
-                    <Layout>
-                        <Routes>
-                            <Route path="/home" element={<Home />} />
-                            <Route path="/books" element={<Books />} />
-                            <Route path="/books/:id" element={<BookDetails />} />
-                            <Route path="/my-books" element={<MyBooks />} />
-                            <Route path="/rented-books" element={<RentedBooks />} />
-                            <Route path="/return-book" element={<ReturnBook />} />
-                            <Route path="/history" element={<RentalHistory />} />
-                            <Route path="/messages" element={<Messages />} />
-                            <Route path="/messages/:conversationId" element={<Messages />} />
-                            <Route path="*" element={<Navigate to="/home" replace />} />
-                        </Routes>
-                        <ChatBot />
-                    </Layout>
-                } />
+                <Route
+                    path="/*"
+                    element={
+                        <Layout>
+                            <Routes>
+                                <Route path="/home" element={<Home />} />
+                                <Route path="/books" element={<Books />} />
+                                <Route path="/books/:id" element={<BookDetails />} />
+                                <Route path="/my-books" element={<MyBooks />} />
+                                <Route path="/rented-books" element={<RentedBooks />} />
+                                <Route path="/return-book" element={<ReturnBook />} />
+                                <Route path="/history" element={<RentalHistory />} />
+                                <Route path="/messages" element={<Messages />} />
+                                <Route path="/messages/:conversationId" element={<Messages />} />
+                                <Route path="*" element={<Navigate to="/home" replace />} />
+                                <Route path="/profile" element={<Profile />} />
+                            </Routes>
+                            <ChatBot />
+                        </Layout>
+                    }
+                />
             )}
         </Routes>
     );
