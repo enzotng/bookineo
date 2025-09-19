@@ -1,5 +1,5 @@
 import express from "express";
-import type { Request, Response } from "express"; // pour TypeScript uniquement
+import type { Request, Response } from "express";
 import { userControllers } from "../controllers/index.ts";
 import { authenticateToken } from "../middleware/auth.ts";
 
