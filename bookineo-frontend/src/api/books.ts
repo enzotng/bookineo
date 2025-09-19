@@ -29,7 +29,7 @@ class BooksAPI {
         }
     }
 
-    async getBookById(id: string): Promise<Book> {
+    async getBookById(id: string | number): Promise<Book> {
         try {
             const response = await fetch(`${API_BASE_URL}/books/${id}`);
             if (!response.ok) {
@@ -92,7 +92,7 @@ class BooksAPI {
         }
     }
 
-    async updateBook(id: string, updates: UpdateBookRequest): Promise<Book> {
+    async updateBook(id: string | number, updates: UpdateBookRequest): Promise<Book> {
         try {
             const response = await fetch(`${API_BASE_URL}/books/${id}`, {
                 method: "PUT",
@@ -113,7 +113,7 @@ class BooksAPI {
         }
     }
 
-    async deleteBook(id: string): Promise<void> {
+    async deleteBook(id: string | number): Promise<void> {
         try {
             const response = await fetch(`${API_BASE_URL}/books/${id}`, {
                 method: "DELETE",

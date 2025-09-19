@@ -71,7 +71,7 @@ export const authAPI = {
     },
 
     getProfile: async (): Promise<User> => {
-        const token = localStorage.getItem("authToken");
+        const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 
         if (!token) {
             throw new Error("Token manquant");
@@ -86,6 +86,7 @@ export const authAPI = {
         if (!response.ok) {
             if (response.status === 401) {
                 localStorage.removeItem("authToken");
+                sessionStorage.removeItem("authToken");
                 throw new Error("Session expirée");
             }
             const error = await response.json();

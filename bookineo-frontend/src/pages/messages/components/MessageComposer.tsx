@@ -97,7 +97,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                 {recipient ? (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                         <Avatar className="w-8 h-8">
-                            <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-sm">
+                            <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 text-white flex items-center justify-center text-sm">
                                 {getInitials(recipient.name)}
                             </div>
                         </Avatar>
@@ -145,7 +145,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Écrivez votre message ici..."
                             rows={8}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm resize-none"
                             required
                         />
                     </div>
@@ -154,7 +154,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                         <Button type="button" variant="outline" onClick={onClose} disabled={sending}>
                             Annuler
                         </Button>
-                        <Button type="submit" disabled={sending || !content.trim() || (!recipient && !recipientEmail.trim())}>
+                        <Button type="submit" disabled={sending || !content.trim() || (!recipient && !recipientEmail.trim())} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all">
                             {sending ? (
                                 "Envoi..."
                             ) : (

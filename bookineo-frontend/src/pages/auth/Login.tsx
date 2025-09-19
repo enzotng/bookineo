@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../../hooks/useAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label } from "../../components/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Input, Label, Checkbox } from "../../components/ui";
 import { Eye, EyeOff } from "lucide-react";
+import { AuthBackground } from "../../components/auth";
 
 const loginSchema = z.object({
     email: z.string().email("Format d'email invalide"),
     password: z.string().min(1, "Mot de passe obligatoire"),
-    rememberMe: z.boolean().optional()
+    rememberMe: z.union([z.boolean(), z.string()]).transform(val => val === true || val === "true" || val === "on").optional()
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -25,28 +26,33 @@ const Login: React.FC = () => {
         resolver: zodResolver(loginSchema)
     });
 
+
     const onSubmit = async (data: LoginForm) => {
+        console.log("onSubmit called with:", data);
         try {
             setError("");
             await login(data);
             navigate("/home");
         } catch (error) {
+            console.error("Login error:", error);
             const errorMessage = error instanceof Error ? error.message : "Erreur de connexion";
             setError(errorMessage);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            <Card className="w-full max-w-md">
+        <div className="relative min-h-screen bg-gradient-to-br from-baby-powder-700 via-baby-powder-600 to-baby-powder-800 overflow-hidden flex items-center justify-center p-4">
+            <Card className="bg-baby-powder-900/95 backdrop-blur-lg border-0 shadow-2xl w-full max-w-md mx-auto relative z-[100]">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Bookineo</CardTitle>
-                    <CardDescription>Connectez-vous à votre compte</CardDescription>
+                    <CardTitle className="text-3xl font-black mb-2">
+                        Book<span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">ineo</span>
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">Connectez-vous à votre compte</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                            <div className="bg-bistre-900/50 border border-bistre-600 text-bistre-600 px-4 py-3 rounded-md text-sm">
                                 {error}
                             </div>
                         )}
@@ -58,7 +64,7 @@ const Login: React.FC = () => {
                                 placeholder="prenom.nom@domaine.com"
                                 {...register("email")}
                             />
-                            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+                            {errors.email && <p className="text-bistre-600 text-sm">{errors.email.message}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -80,34 +86,34 @@ const Login: React.FC = () => {
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </Button>
                             </div>
-                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                            {errors.password && <p className="text-bistre-600 text-sm">{errors.password.message}</p>}
                         </div>
 
                         <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="remember"
-                                className="rounded border-gray-300"
-                                {...register("rememberMe")}
-                            />
+                            <Checkbox id="remember" {...register("rememberMe")} />
                             <Label htmlFor="remember" className="text-sm font-normal">
-                                Remember me
+                                Se souvenir de moi
                             </Label>
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        <Button
+                            type="submit"
+                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? "Connexion..." : "Se connecter"}
                         </Button>
 
                         <div className="text-center text-sm">
-                            <span className="text-gray-600">Pas encore de compte ? </span>
-                            <Link to="/auth/register" className="text-blue-600 hover:underline">
+                            <span className="text-muted-foreground">Pas encore de compte ? </span>
+                            <Link to="/auth/register" className="text-blue-600 hover:underline font-medium">
                                 Créer un compte
                             </Link>
                         </div>
                     </form>
                 </CardContent>
             </Card>
+            <AuthBackground type="login" />
         </div>
     );
 };
