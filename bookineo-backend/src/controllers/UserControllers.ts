@@ -195,6 +195,19 @@ class UserController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async getAllUsers(req: Request, res: Response): Promise<void> {
+        try {
+            const users = await query<User>(
+                "SELECT id, email, first_name, last_name, birth_date, created_at FROM users ORDER BY first_name, last_name"
+            );
+
+            res.json(users.rows);
+        } catch (error: any) {
+            console.error("Erreur getAllUsers:", error);
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 export default new UserController();
