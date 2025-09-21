@@ -2,6 +2,8 @@
 
 Application web responsive de location de livres entre particuliers. Développée avec React/TypeScript pour le frontend et Node.js/Express pour le backend, utilisant PostgreSQL comme base de données.
 
+Lien pour tester le site : **[https://bookineo.altelis.com](https://bookineo.altelis.com)**
+
 ## Architecture
 
 - **Frontend**: React 19 + TypeScript + Vite + TailwindCSS + Shadcn/ui
