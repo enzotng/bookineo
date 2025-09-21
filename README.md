@@ -63,7 +63,7 @@ Lien pour tester le site : **[https://bookineo.altelis.com](https://bookineo.alt
 ### 1. Clone du projet
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/enzotng/bookineo
 cd bookineo
 ```
 
