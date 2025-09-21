@@ -208,18 +208,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
 
     if (mobile) {
         return (
-            <div className="flex items-center justify-between p-4 border-b bg-white">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-white lg:hidden">
                 <div className="flex items-center gap-2">
-                    <Book className="h-6 w-6 text-blue-600" />
-                    <h1 className="text-lg font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Bookineo</h1>
+                    <Book className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                    <h1 className="text-base sm:text-lg font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Bookineo</h1>
                 </div>
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                            <Menu className="h-5 w-5" />
+                        <Button variant="ghost" size="sm" className="relative">
+                            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0">
+                    <SheetContent side="left" className="p-0 w-80">
                         <SidebarContent />
                     </SheetContent>
                 </Sheet>

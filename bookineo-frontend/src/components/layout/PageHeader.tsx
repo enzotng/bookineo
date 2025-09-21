@@ -20,24 +20,24 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     actions
 }) => {
     return (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                    <h1 className="text-2xl font-black text-foreground">{title}</h1>
-                    <div className="text-sm text-muted-foreground">{subtitle}</div>
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-xl sm:text-2xl font-black text-foreground leading-tight">{title}</h1>
+                    <div className="text-xs sm:text-sm text-muted-foreground mt-0.5">{subtitle}</div>
                 </div>
                 {badge && (
-                    <Badge className={badge.className || "bg-emerald-100 text-emerald-800 border-emerald-300"}>
+                    <Badge className={`text-xs sm:text-sm flex-shrink-0 ${badge.className || "bg-emerald-100 text-emerald-800 border-emerald-300"}`}>
                         {badge.text}
                     </Badge>
                 )}
             </div>
 
             {actions && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     {actions}
                 </div>
             )}

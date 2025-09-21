@@ -30,7 +30,7 @@ export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({ book, ow
         }
     };
 
-    if (!user || (!showAlways && user.id === book.owner_id.toString())) {
+    if (!user || !book || !book.owner_id || (!showAlways && user.id === book.owner_id.toString())) {
         return null;
     }
 

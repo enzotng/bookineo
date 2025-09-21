@@ -6,6 +6,7 @@ import { useRentalCart } from "../../contexts/RentalCartContext";
 import { useNavigate } from "react-router-dom";
 import { booksAPI } from "../../api/books";
 import type { Book, Category } from "../../types/book";
+import { Sidebar } from "./Sidebar";
 
 export const Header: React.FC = () => {
     const { unreadCount } = useMessages();
@@ -171,8 +172,8 @@ export const Header: React.FC = () => {
     };
 
     return (
-        <header className="border-b bg-white backdrop-blur-lg px-6 h-16 flex items-center justify-between fixed top-0 left-64 right-0 z-50">
-            <div className="flex-1 max-w-3xl" ref={searchRef}>
+        <header className="border-b bg-white backdrop-blur-lg px-3 sm:px-4 lg:px-6 h-16 flex items-center justify-between fixed top-0 left-0 lg:left-64 right-0 z-50">
+            <div className="hidden lg:block flex-1 max-w-3xl" ref={searchRef}>
                 <div className="relative">
                     <div className="flex gap-2">
                         <div className="relative flex-1 group">
@@ -379,10 +380,14 @@ export const Header: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="lg:hidden flex-1">
+                <Sidebar mobile />
+            </div>
+
+            <div className="flex items-center gap-1 sm:gap-2">
                 <div className="relative">
-                    <Button variant="ghost" size="sm" className="border border-gray-200 rounded-lg hover:bg-gray-100" onClick={() => navigate("/messages")}>
-                        <MessageCircle className="h-5 w-5" />
+                    <Button variant="ghost" size="default" className="border border-gray-200 rounded-lg hover:bg-gray-100 p-2 sm:p-3" onClick={() => navigate("/messages")}>
+                        <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                         {unreadCount > 0 && (
                             <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center">
                                 {unreadCount > 99 ? "99+" : unreadCount}
@@ -393,8 +398,8 @@ export const Header: React.FC = () => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <div className="relative">
-                            <Button variant="ghost" size="sm" className="border border-gray-200 rounded-lg hover:bg-gray-100">
-                                <ShoppingCart className="h-5 w-5" />
+                            <Button variant="ghost" size="default" className="border border-gray-200 rounded-lg hover:bg-gray-100 p-2 sm:p-3">
+                                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                                 {cart.total_items > 0 && (
                                     <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                                         {cart.total_items > 99 ? "99+" : cart.total_items}

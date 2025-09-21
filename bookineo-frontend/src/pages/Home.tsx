@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, Badge, Spinner, Button, DataTable, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "../components/ui";
 import { BookOpen, TrendingUp, Users, Star, Sparkles, Crown, Compass, Grid3X3, List, Plus, MoreHorizontal, Eye, Edit, Trash2, Download } from "lucide-react";
 import { BookCard, BookDetailModal } from "../components/books";
+import { PageHeader } from "../components/layout";
 import { booksAPI } from "../api/books";
 import type { Book } from "../types/book";
 import { useNavigate } from "react-router-dom";
@@ -204,32 +205,37 @@ const Home: React.FC = () => {
     );
 
     return (
-        <div className="w-full h-full flex flex-col gap-10">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-black text-foreground">Catalogue des livres</h1>
-                    <p className="text-muted-foreground">Découvrez notre collection de livres disponibles</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm" onClick={exportToCSV} className="flex items-center gap-2">
-                        <Download className="w-4 h-4" />
-                        Exporter CSV
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === "cards" ? "table" : "cards")} className="flex items-center gap-2">
-                        {viewMode === "cards" ? (
-                            <>
-                                <List className="w-4 h-4" />
-                                Vue liste
-                            </>
-                        ) : (
-                            <>
-                                <Grid3X3 className="w-4 h-4" />
-                                Vue cartes
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </div>
+        <div className="w-full h-full flex flex-col gap-8 lg:gap-10">
+            <PageHeader
+                title="Catalogue des livres"
+                subtitle="Découvrez notre collection de livres disponibles"
+                icon={BookOpen}
+                badge={{
+                    text: `${books.length} livres`,
+                    className: "bg-blue-100 text-blue-800 border-blue-300"
+                }}
+                actions={
+                    <>
+                        <Button size="sm" onClick={exportToCSV} className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold">
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline">Exporter CSV</span>
+                        </Button>
+                        <Button size="sm" onClick={() => setViewMode(viewMode === "cards" ? "table" : "cards")} className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold">
+                            {viewMode === "cards" ? (
+                                <>
+                                    <List className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Vue liste</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Grid3X3 className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Vue cartes</span>
+                                </>
+                            )}
+                        </Button>
+                    </>
+                }
+            />
 
             <BookSection books={newBooks} title="Nouveautés" subtitle="Les derniers arrivages de la semaine" gradientColor="from-blue-500 to-purple-600" icon={Sparkles} />
 

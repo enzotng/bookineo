@@ -12,14 +12,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     return (
         <div className="min-h-screen bg-background flex">
-            <div className="hidden md:block fixed left-0 top-0 h-screen z-40">
+            <div className="hidden lg:block fixed left-0 top-0 h-screen z-40">
                 <Sidebar />
             </div>
 
-            <div className="flex-1 flex flex-col md:ml-64">
+            <div className="flex-1 flex flex-col lg:ml-64">
                 <Header />
 
-                <main className="flex-1 p-6 min-h-[calc(100vh-4rem)] mt-16">{children}</main>
+                <main className="flex-1 p-3 sm:p-4 lg:p-6 min-h-[calc(100vh-4rem)] mt-16">{children}</main>
             </div>
         </div>
     );

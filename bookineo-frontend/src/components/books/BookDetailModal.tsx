@@ -95,9 +95,6 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
                         <DialogTitle className="text-xl font-bold text-gray-900 pr-8">
                             {book.title}
                         </DialogTitle>
-                        <Button variant="ghost" size="sm" onClick={onClose}>
-                            <X className="w-4 h-4" />
-                        </Button>
                     </div>
                     <p className="text-gray-600 flex items-center gap-2 text-left">
                         <User className="w-4 h-4" />
