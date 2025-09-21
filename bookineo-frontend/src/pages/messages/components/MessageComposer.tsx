@@ -59,7 +59,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             setSubject("");
             setContent("");
             setRecipientEmail("");
-            toast.success("Message envoyé avec succès ! 📬");
+            toast.success("Message envoyé avec succès !");
             onClose();
         } catch (error) {
             console.error("Erreur lors de l'envoi:", error);

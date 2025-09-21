@@ -15,7 +15,7 @@ export const useSocket = () => {
                 const senderName = `${message.sender.first_name} ${message.sender.last_name}`;
 
                 if (window.location.pathname !== '/messages') {
-                    toast.info(`📬 Nouveau message de ${senderName}`);
+                    toast.info(`Nouveau message de ${senderName}`);
                 }
 
                 if ('Notification' in window && Notification.permission === 'granted') {

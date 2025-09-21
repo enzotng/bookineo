@@ -183,158 +183,193 @@ const RentalCart: React.FC = () => {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {cart.items.map((item) => (
-                    <div key={item.book.id} className="group relative bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-1 shadow-lg hover:shadow-2xl transition-all duration-500 backdrop-blur-sm border border-white/50">
-                        <div className="relative bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-80"></div>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2 space-y-4">
+                    {cart.items.map((item) => (
+                        <div key={item.book.id} className="group relative bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-1 shadow-lg hover:shadow-2xl transition-all duration-500 backdrop-blur-sm border border-white/50">
+                            <div className="relative bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-80"></div>
 
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeFromCart(item.book.id)}
-                                className="absolute top-2 right-2 z-20 h-8 w-8 p-0 bg-white/80 hover:bg-red-50 text-red-600 rounded-full shadow-sm"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeFromCart(item.book.id)}
+                                    className="absolute top-2 right-2 z-20 h-8 w-8 p-0 bg-white/80 hover:bg-red-50 text-red-600 rounded-full shadow-sm"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
 
-                            <div className="p-4 flex flex-col h-full">
-                                <div className="flex gap-4 mb-4">
-                                    <div className="w-20 h-28 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
-                                        {item.book.image_url ? (
-                                            <img src={item.book.image_url} alt={item.book.title} className="w-full h-full object-cover rounded-lg" />
-                                        ) : (
-                                            <div className="text-center">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-1 mx-auto">
-                                                    <BookOpen className="w-5 h-5 text-white" />
-                                                </div>
-                                                <div className="text-xs text-gray-700 font-medium text-center leading-tight">{item.book.title.slice(0, 15)}</div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-lg text-gray-900 line-clamp-2 mb-1">{item.book.title}</h3>
-                                        <p className="text-gray-600 text-sm mb-2 truncate">{item.book.author}</p>
-                                        <div className="flex items-center gap-2">
-                                            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">{item.book.price}€/jour</Badge>
-                                            {item.total_price > 0 && (
-                                                <div className="text-lg font-bold text-blue-600">
-                                                    {item.total_price.toFixed(2)}€
+                                <div className="p-4 flex flex-col h-full">
+                                    <div className="flex gap-4 mb-4">
+                                        <div className="w-20 h-28 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300">
+                                            {item.book.image_url ? (
+                                                <img src={item.book.image_url} alt={item.book.title} className="w-full h-full object-cover rounded-lg" />
+                                            ) : (
+                                                <div className="text-center">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-1 mx-auto">
+                                                        <BookOpen className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="text-xs text-gray-700 font-medium text-center leading-tight">{item.book.title.slice(0, 15)}</div>
                                                 </div>
                                             )}
                                         </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-lg text-gray-900 line-clamp-2 mb-1">{item.book.title}</h3>
+                                            <p className="text-gray-600 text-sm mb-2 truncate">{item.book.author}</p>
+                                            <div className="flex items-center gap-2">
+                                                <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">{item.book.price}€/jour</Badge>
+                                                {item.total_price > 0 && (
+                                                    <div className="text-lg font-bold text-blue-600">
+                                                        {item.total_price.toFixed(2)}€
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-3 flex-1">
-                                    {editingItem === item.book.id ? (
-                                        <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                                            <div className="grid grid-cols-1 gap-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium mb-2 text-blue-800">Date de début</label>
-                                                    <DatePicker
-                                                        date={tempDates.rental_date}
-                                                        onSelect={(date) => setTempDates(prev => ({ ...prev, rental_date: date }))}
-                                                        minDate={new Date()}
-                                                        placeholder="Choisir la date de début"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium mb-2 text-blue-800">Date de retour</label>
-                                                    <DatePicker
-                                                        date={tempDates.expected_return_date}
-                                                        onSelect={(date) => setTempDates(prev => ({ ...prev, expected_return_date: date }))}
-                                                        minDate={tempDates.rental_date || new Date()}
-                                                        placeholder="Choisir la date de retour"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2 justify-end">
-                                                <Button size="sm" onClick={() => handleSaveEdit(item.book.id)} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                                                    <Check className="w-4 h-4 mr-1" />
-                                                    Confirmer
-                                                </Button>
-                                                <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-                                                    <X className="w-4 h-4 mr-1" />
-                                                    Annuler
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-3 gap-2 text-center">
-                                                <div className="bg-gray-50 rounded-lg p-2">
-                                                    <div className="text-xs text-gray-500 mb-1">
-                                                        <Calendar className="w-3 h-3 inline mr-1" />
-                                                        Début
+                                    <div className="space-y-3 flex-1">
+                                        {editingItem === item.book.id ? (
+                                            <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium mb-2 text-blue-800">Date de début</label>
+                                                        <DatePicker
+                                                            date={tempDates.rental_date}
+                                                            onSelect={(date) => setTempDates(prev => ({ ...prev, rental_date: date }))}
+                                                            minDate={new Date()}
+                                                            placeholder="Choisir la date de début"
+                                                        />
                                                     </div>
-                                                    <div className="font-semibold text-sm text-gray-900">
-                                                        {item.rental_date ? new Date(item.rental_date).toLocaleDateString('fr-FR') : 'Non défini'}
+                                                    <div>
+                                                        <label className="block text-sm font-medium mb-2 text-blue-800">Date de retour</label>
+                                                        <DatePicker
+                                                            date={tempDates.expected_return_date}
+                                                            onSelect={(date) => setTempDates(prev => ({ ...prev, expected_return_date: date }))}
+                                                            minDate={tempDates.rental_date || new Date()}
+                                                            placeholder="Choisir la date de retour"
+                                                        />
                                                     </div>
                                                 </div>
-                                                <div className="bg-gray-50 rounded-lg p-2">
-                                                    <div className="text-xs text-gray-500 mb-1">
-                                                        <Calendar className="w-3 h-3 inline mr-1" />
-                                                        Retour
-                                                    </div>
-                                                    <div className="font-semibold text-sm text-gray-900">
-                                                        {item.expected_return_date ? new Date(item.expected_return_date).toLocaleDateString('fr-FR') : 'Non défini'}
-                                                    </div>
-                                                </div>
-                                                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-2">
-                                                    <div className="text-xs text-blue-600 mb-1">
-                                                        <Clock className="w-3 h-3 inline mr-1" />
-                                                        Durée
-                                                    </div>
-                                                    <div className="font-bold text-sm text-blue-700">
-                                                        {item.duration_days > 0 ? `${item.duration_days}j` : '--'}
-                                                    </div>
+                                                <div className="flex gap-2 justify-end">
+                                                    <Button size="sm" onClick={() => handleSaveEdit(item.book.id)} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                                        <Check className="w-4 h-4 mr-1" />
+                                                        Confirmer
+                                                    </Button>
+                                                    <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                                                        <X className="w-4 h-4 mr-1" />
+                                                        Annuler
+                                                    </Button>
                                                 </div>
                                             </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-3 gap-2 text-center">
+                                                    <div className="bg-gray-50 rounded-lg p-2">
+                                                        <div className="text-xs text-gray-500 mb-1">
+                                                            <Calendar className="w-3 h-3 inline mr-1" />
+                                                            Début
+                                                        </div>
+                                                        <div className="font-semibold text-sm text-gray-900">
+                                                            {item.rental_date ? new Date(item.rental_date).toLocaleDateString('fr-FR') : 'Non défini'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gray-50 rounded-lg p-2">
+                                                        <div className="text-xs text-gray-500 mb-1">
+                                                            <Calendar className="w-3 h-3 inline mr-1" />
+                                                            Retour
+                                                        </div>
+                                                        <div className="font-semibold text-sm text-gray-900">
+                                                            {item.expected_return_date ? new Date(item.expected_return_date).toLocaleDateString('fr-FR') : 'Non défini'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-2">
+                                                        <div className="text-xs text-blue-600 mb-1">
+                                                            <Clock className="w-3 h-3 inline mr-1" />
+                                                            Durée
+                                                        </div>
+                                                        <div className="font-bold text-sm text-blue-700">
+                                                            {item.duration_days > 0 ? `${item.duration_days}j` : '--'}
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                            <div className="flex justify-center">
-                                                <Button
-                                                    size="sm"
-                                                    onClick={() => handleEditItem(item)}
-                                                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold"
-                                                >
-                                                    <Edit className="w-4 h-4 mr-1" />
-                                                    {item.rental_date ? 'Modifier les dates' : 'Configurer les dates'}
-                                                </Button>
+                                                <div className="flex justify-center">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handleEditItem(item)}
+                                                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold"
+                                                    >
+                                                        <Edit className="w-4 h-4 mr-1" />
+                                                        {item.rental_date ? 'Modifier les dates' : 'Configurer les dates'}
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold">Total du panier</h3>
-                        <div className="text-2xl font-bold text-blue-600">
-                            {cart.total_amount > 0 ? `${cart.total_amount.toFixed(2)}€` : 'À configurer'}
-                        </div>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button
-                            onClick={handleProcessRentals}
-                            disabled={isProcessing || cart.total_amount === 0}
-                            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                        >
-                            <CreditCard className="w-4 h-4 mr-2" />
-                            {isProcessing ? "Traitement..." : "Finaliser les locations"}
-                        </Button>
-                        <Button variant="outline" onClick={() => navigate("/books")}>
-                            Continuer les achats
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                <div className="xl:col-span-1">
+                    <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 sticky top-4">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold">Récapitulatif</h3>
+                                <div className="text-2xl font-bold text-blue-600">
+                                    {cart.total_amount > 0 ? `${cart.total_amount.toFixed(2)}€` : 'À configurer'}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 mb-6">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Livres sélectionnés</span>
+                                    <span className="font-medium">{cart.total_items}</span>
+                                </div>
+                                {cart.items.some(item => item.duration_days > 0) && (
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600">Durée moyenne</span>
+                                        <span className="font-medium">
+                                            {Math.round(cart.items.filter(item => item.duration_days > 0)
+                                                .reduce((acc, item) => acc + item.duration_days, 0) /
+                                                cart.items.filter(item => item.duration_days > 0).length)}j
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="border-t pt-3">
+                                    <div className="flex items-center justify-between font-bold">
+                                        <span>Total</span>
+                                        <span className="text-blue-600">
+                                            {cart.total_amount > 0 ? `${cart.total_amount.toFixed(2)}€` : 'À configurer'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Button
+                                    onClick={handleProcessRentals}
+                                    disabled={isProcessing || cart.total_amount === 0 || cart.items.some(item => !item.rental_date || !item.expected_return_date)}
+                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white disabled:from-gray-400 disabled:to-gray-500"
+                                >
+                                    <CreditCard className="w-4 h-4 mr-2" />
+                                    {isProcessing ? "Traitement..." : "Finaliser les locations"}
+                                </Button>
+                                {cart.items.some(item => !item.rental_date || !item.expected_return_date) && (
+                                    <p className="text-xs text-amber-600 text-center">
+                                        Configurez les dates pour tous les livres avant de finaliser
+                                    </p>
+                                )}
+                                <Button variant="outline" onClick={() => navigate("/books")} className="w-full">
+                                    Continuer les achats
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
 
             {!loadingSuggestions && suggestedBooks.length > 0 && (
                 <BookSection

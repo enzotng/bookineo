@@ -140,10 +140,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({ messages, particip
             });
             setMessageContent("");
             setTimeout(() => scrollToBottom(), 100);
-            toast.success(`✅ Message envoyé à ${participant.name}`);
+            toast.success(`Message envoyé à ${participant.name}`);
         } catch (error) {
             console.error("Erreur envoi message:", error);
-            toast.error(`❌ Erreur lors de l'envoi du message`);
+            toast.error(`Erreur lors de l'envoi du message`);
         } finally {
             setIsSending(false);
         }

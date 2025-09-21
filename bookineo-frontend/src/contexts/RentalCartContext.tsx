@@ -129,7 +129,7 @@ export const RentalCartProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const failures = results.filter((result) => result.status === "rejected").length;
 
             if (successes === cartItems.length) {
-                toast.success(`🎉 ${successes} location${successes > 1 ? "s" : ""} confirmée${successes > 1 ? "s" : ""} !`);
+                toast.success(`${successes} location${successes > 1 ? "s" : ""} confirmée${successes > 1 ? "s" : ""} !`);
                 clearCart();
                 return true;
             } else if (successes > 0) {

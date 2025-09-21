@@ -38,13 +38,41 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     showFilterCount = true,
 }) => {
     const [showSuggestions, setShowSuggestions] = React.useState<Record<string, boolean>>({});
+    const [localFilters, setLocalFilters] = React.useState(filters);
 
-    const handleFilterChange = (key: string, value: string | boolean | undefined) => {
-        onFiltersChange({
-            ...filters,
-            [key]: value === "" || value === "all" ? undefined : value,
-        });
+    React.useEffect(() => {
+        setLocalFilters(filters);
+    }, [filters]);
+
+    const debounceTimeouts = React.useRef<Record<string, NodeJS.Timeout>>({});
+
+    const handleFilterChange = (key: string, value: string | boolean | undefined, immediate: boolean = false) => {
+        const newValue = value === "" || value === "all" ? undefined : value;
+        const newFilters = { ...filters, [key]: newValue };
+
+        setLocalFilters(newFilters);
+
+        if (immediate) {
+            onFiltersChange(newFilters);
+        } else {
+            if (debounceTimeouts.current[key]) {
+                clearTimeout(debounceTimeouts.current[key]);
+            }
+
+            debounceTimeouts.current[key] = setTimeout(() => {
+                onFiltersChange(newFilters);
+                delete debounceTimeouts.current[key];
+            }, 300);
+        }
     };
+
+    React.useEffect(() => {
+        return () => {
+            Object.values(debounceTimeouts.current).forEach((timeout) => {
+                if (timeout) clearTimeout(timeout);
+            });
+        };
+    }, []);
 
     const handleRangeChange = (key: string, type: "min" | "max", value: string) => {
         const currentRange = filters[key] || {};
@@ -93,7 +121,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <Input
                             placeholder={placeholder}
-                            value={filters[key] || ""}
+                            value={localFilters[key] || ""}
                             onChange={(e) => handleFilterChange(key, e.target.value)}
                             className="pl-10 rounded-xl border-gray-200 focus:border-blue-500"
                         />
@@ -103,14 +131,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 {type === "text" && (
                     <Input
                         placeholder={placeholder}
-                        value={filters[key] || ""}
+                        value={localFilters[key] || ""}
                         onChange={(e) => handleFilterChange(key, e.target.value)}
                         className="rounded-xl border-gray-200 focus:border-blue-500"
                     />
                 )}
 
                 {type === "select" && options && (
-                    <Select value={filters[key] || "all"} onValueChange={(value) => handleFilterChange(key, value)}>
+                    <Select value={localFilters[key] || "all"} onValueChange={(value) => handleFilterChange(key, value, true)}>
                         <SelectTrigger className="rounded-xl border-gray-200 focus:border-blue-500 bg-white">
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>
@@ -135,8 +163,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     <Input
                         type="date"
                         placeholder={placeholder}
-                        value={filters[key] || ""}
-                        onChange={(e) => handleFilterChange(key, e.target.value)}
+                        value={localFilters[key] || ""}
+                        onChange={(e) => handleFilterChange(key, e.target.value, true)}
                         className="rounded-xl border-gray-200 focus:border-blue-500"
                     />
                 )}
@@ -146,8 +174,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         <input
                             type="checkbox"
                             id={key}
-                            checked={filters[key] || false}
-                            onChange={(e) => handleFilterChange(key, e.target.checked)}
+                            checked={localFilters[key] || false}
+                            onChange={(e) => handleFilterChange(key, e.target.checked, true)}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
                         <label htmlFor={key} className="text-sm text-gray-700 cursor-pointer">
@@ -245,13 +273,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         <h3 className="text-lg font-bold text-gray-900">{title}</h3>
                         <div className="text-sm text-gray-500">{subtitle}</div>
                     </div>
-                    {hasActiveFilters && (
-                        <Button variant="ghost" size="sm" onClick={clearFilters} className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg border border-red-200">
-                            <X className="w-4 h-4 mr-2" />
-                            Effacer filtres
-                        </Button>
-                    )}
                 </div>
+                {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg border border-red-200">
+                        <X className="w-4 h-4 mr-2" />
+                        Effacer filtres
+                    </Button>
+                )}
 
                 {customActions.length > 0 && <div className="flex items-center gap-2">{customActions}</div>}
             </div>
