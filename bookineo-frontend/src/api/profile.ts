@@ -23,13 +23,22 @@ class ProfileAPI {
         return res.json();
     }
 
-    // src/api/profile.ts
     async updateProfile(updates: UpdateProfileRequest): Promise<UserProfile> {
-        // ne garde que les props définies
         const payload: Record<string, unknown> = {};
-        if (updates.first_name !== undefined) payload.first_name = updates.first_name;
-        if (updates.last_name !== undefined) payload.last_name = updates.last_name;
-        if (updates.birth_date !== undefined) payload.birth_date = updates.birth_date;
+        const toNull = (v?: string) => (v !== undefined && v.trim() === "" ? undefined : v);
+
+        if (updates.first_name !== undefined) {
+            const v = toNull(updates.first_name);
+            if (v !== undefined) payload.first_name = v;
+        }
+        if (updates.last_name !== undefined) {
+            const v = toNull(updates.last_name);
+            if (v !== undefined) payload.last_name = v;
+        }
+        if (updates.birth_date !== undefined) {
+            const v = toNull(updates.birth_date);
+            if (v !== undefined) payload.birth_date = v;
+        }
         if (updates.newsletter !== undefined) payload.newsletter = updates.newsletter;
 
         const res = await fetch(PROFILE_URL, {
@@ -37,7 +46,6 @@ class ProfileAPI {
             headers: jsonHeaders(),
             body: JSON.stringify(payload),
         });
-
         if (!res.ok) {
             const t = await res.text().catch(() => "");
             throw new Error(`HTTP error! status: ${res.status} - ${t}`);
