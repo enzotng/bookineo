@@ -8,22 +8,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Inpu
 import { Eye, EyeOff } from "lucide-react";
 import { AuthBackground } from "../../components/auth";
 
-const registerSchema = z.object({
-    email: z.string().email("Format d'email invalide"),
-    password: z
-        .string()
-        .min(8, "Au moins 8 caractères")
-        .regex(/[A-Z]/, "Au moins une majuscule")
-        .regex(/[a-z]/, "Au moins une minuscule")
-        .regex(/[!@#$%^&*(),.?\":{}|<>]/, "Au moins un caractère spécial"),
-    confirmPassword: z.string(),
-    firstName: z.string().min(1, "Le prénom est obligatoire"),
-    lastName: z.string().min(1, "Le nom est obligatoire"),
-    birthDate: z.string().optional()
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Les mots de passe ne correspondent pas",
-    path: ["confirmPassword"]
-});
+const registerSchema = z
+    .object({
+        email: z.string().email("Format d'email invalide"),
+        password: z
+            .string()
+            .min(8, "Au moins 8 caractères")
+            .regex(/[A-Z]/, "Au moins une majuscule")
+            .regex(/[a-z]/, "Au moins une minuscule")
+            .regex(/[!@#$%^&*(),.?\":{}|<>]/, "Au moins un caractère spécial"),
+        confirmPassword: z.string(),
+        firstName: z.string().min(1, "Le prénom est obligatoire"),
+        lastName: z.string().min(1, "Le nom est obligatoire"),
+        birthDate: z.string().optional(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Les mots de passe ne correspondent pas",
+        path: ["confirmPassword"],
+    });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -34,8 +36,12 @@ const Register: React.FC = () => {
     const navigate = useNavigate();
     const { register: authRegister } = useAuth();
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
-        resolver: zodResolver(registerSchema)
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<RegisterForm>({
+        resolver: zodResolver(registerSchema),
     });
 
     const onSubmit = async (data: RegisterForm) => {
@@ -46,7 +52,7 @@ const Register: React.FC = () => {
                 password: data.password,
                 firstName: data.firstName,
                 lastName: data.lastName,
-                birthDate: data.birthDate
+                birthDate: data.birthDate,
             });
             navigate("/home");
         } catch (error) {
@@ -66,66 +72,36 @@ const Register: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                                {error}
-                            </div>
-                        )}
+                        {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">{error}</div>}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName">Prénom</Label>
-                                <Input
-                                    id="firstName"
-                                    {...register("firstName")}
-                                />
+                                <Input id="firstName" {...register("firstName")} />
                                 {errors.firstName && <p className="text-red-600 text-sm">{errors.firstName.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Nom</Label>
-                                <Input
-                                    id="lastName"
-                                    {...register("lastName")}
-                                />
+                                <Input id="lastName" {...register("lastName")} />
                                 {errors.lastName && <p className="text-red-600 text-sm">{errors.lastName.message}</p>}
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="prenom.nom@domaine.com"
-                                {...register("email")}
-                            />
+                            <Input id="email" type="email" {...register("email")} />
                             {errors.email && <p className="text-red-600 text-sm">{errors.email.message}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="birthDate">Date de naissance</Label>
-                            <Input
-                                id="birthDate"
-                                type="date"
-                                {...register("birthDate")}
-                            />
+                            <Input id="birthDate" type="date" {...register("birthDate")} />
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="password">Mot de passe</Label>
                             <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    {...register("password")}
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
+                                <Input id="password" type={showPassword ? "text" : "password"} {...register("password")} />
+                                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </Button>
                             </div>
@@ -135,12 +111,7 @@ const Register: React.FC = () => {
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
                             <div className="relative">
-                                <Input
-                                    id="confirmPassword"
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    {...register("confirmPassword")}
-                                />
+                                <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" {...register("confirmPassword")} />
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -154,11 +125,7 @@ const Register: React.FC = () => {
                             {errors.confirmPassword && <p className="text-red-600 text-sm">{errors.confirmPassword.message}</p>}
                         </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all"
-                            disabled={isSubmitting}
-                        >
+                        <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all" disabled={isSubmitting}>
                             {isSubmitting ? "Inscription..." : "S'inscrire"}
                         </Button>
 

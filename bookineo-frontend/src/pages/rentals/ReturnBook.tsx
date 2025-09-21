@@ -23,6 +23,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { PageHeader } from "../../components/layout";
 import { FilterPanel } from "../../components/filters";
 import type { FilterConfig } from "../../components/filters";
+import { BookCard } from "../../components/books";
+import type { Book } from "../../types/book";
 import { toast } from "react-toastify";
 import BookPagination from "../books/components/BookPagination";
 
@@ -158,6 +160,36 @@ const ReturnBook: React.FC = () => {
         setCurrentPage(1);
     };
 
+    const convertRentalToBook = (rental: Rental): Book => {
+        const daysOverdue = getDaysOverdue(rental.expected_return_date);
+        const isOverdue = daysOverdue > 0;
+
+        return {
+            id: (rental.book_id || 0).toString(),
+            title: rental.book_title || 'Titre inconnu',
+            author: rental.book_author || 'Auteur inconnu',
+            isbn: '',
+            publication_year: null,
+            description: `Location du ${formatDate(rental.rental_date)} - Retour prévu le ${formatDate(rental.expected_return_date)}${isOverdue ? ` (${daysOverdue}j de retard)` : ''}`,
+            price: 0,
+            status: isOverdue ? 'unavailable' : 'rented' as 'available' | 'rented' | 'unavailable',
+            image_url: rental.book_image_url || '',
+            category_id: null,
+            owner_id: rental.owner_id || 0,
+            created_at: rental.rental_date || '',
+            updated_at: rental.rental_date || '',
+            first_name: '',
+            last_name: ''
+        };
+    };
+
+    const handleBookClick = (book: Book) => {
+        const rental = filteredRentals.find(r => (r.book_id || 0).toString() === book.id);
+        if (rental) {
+            handleReturnClick(rental);
+        }
+    };
+
     const filterConfigs: FilterConfig[] = [
         {
             key: 'search',
@@ -183,7 +215,7 @@ const ReturnBook: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+        <div className="w-full h-full flex flex-col gap-4 rounded-lg">
             <PageHeader
                 title="Retourner un livre"
                 subtitle={`${activeRentals.length} livre${activeRentals.length !== 1 ? 's' : ''} à retourner`}
@@ -217,70 +249,33 @@ const ReturnBook: React.FC = () => {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredRentals.map((rental, index) => {
+                            const book = convertRentalToBook(rental);
                             const daysOverdue = getDaysOverdue(rental.expected_return_date);
                             const isOverdue = daysOverdue > 0;
 
                             return (
-                                <Card
+                                <div
                                     key={rental.id}
-                                    className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 animate-in slide-in-from-left-2"
+                                    className="animate-in slide-in-from-left-2"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
-                                    <CardContent className="p-4">
-                                        <div className="flex flex-col gap-4">
-                                            <div className="relative">
-                                                <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-3">
-                                                    {rental.book_image_url ? (
-                                                        <img
-                                                            src={rental.book_image_url}
-                                                            alt={rental.book_title}
-                                                            className="w-full h-full object-cover rounded-lg"
-                                                        />
-                                                    ) : (
-                                                        <BookOpen className="w-8 h-8 text-blue-500" />
-                                                    )}
-                                                </div>
-
-                                                {isOverdue && (
-                                                    <Badge className="absolute -top-2 -right-2 bg-red-100 text-red-800 border-red-300 shadow-lg animate-pulse">
-                                                        {daysOverdue}j retard
-                                                    </Badge>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <h3 className="font-bold text-sm text-gray-900 line-clamp-2">
-                                                    {rental.book_title || 'Titre inconnu'}
-                                                </h3>
-                                                <p className="text-xs text-gray-600 truncate">
-                                                    {rental.book_author || 'Auteur inconnu'}
-                                                </p>
-                                            </div>
-
-                                            <div className="space-y-2 text-xs text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-3 h-3" />
-                                                    <span>Loué le {formatDate(rental.rental_date)}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-3 h-3" />
-                                                    <span className={isOverdue ? 'text-red-600 font-medium' : ''}>
-                                                        Retour prévu le {formatDate(rental.expected_return_date)}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <Button
-                                                onClick={() => handleReturnClick(rental)}
-                                                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all font-medium"
-                                                size="sm"
-                                            >
-                                                <RotateCcw className="w-4 h-4 mr-2" />
-                                                Retourner
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                    <BookCard
+                                        book={book}
+                                        onBookClick={handleBookClick}
+                                        showActions={false}
+                                        primaryAction={{
+                                            label: "Retourner",
+                                            onClick: () => handleReturnClick(rental)
+                                        }}
+                                        overlays={{
+                                            topRight: isOverdue ? (
+                                                <Badge className="bg-red-100 text-red-800 border-red-300 shadow-lg animate-pulse">
+                                                    {daysOverdue}j retard
+                                                </Badge>
+                                            ) : undefined
+                                        }}
+                                    />
+                                </div>
                             );
                         })}
                     </div>

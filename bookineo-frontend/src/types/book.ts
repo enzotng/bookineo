@@ -33,6 +33,9 @@ export interface BookFilters {
     category_id?: number;
     author?: string;
     title?: string;
+    isbn?: string;
+    min_price?: number;
+    max_price?: number;
     page?: number;
     limit?: number;
 }

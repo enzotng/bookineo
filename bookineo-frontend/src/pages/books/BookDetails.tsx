@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Badge, Spinner } from "../../components/ui";
-import { ArrowLeft, BookOpen, User, Calendar, Tag, MapPin, MessageCircle } from "lucide-react";
+import { Button, Spinner } from "../../components/ui";
+import { ArrowLeft, BookOpen, User, Calendar, Tag, MessageCircle } from "lucide-react";
 import { PageHeader } from "../../components/layout";
 import { ContactOwnerButton } from "../../components/messaging";
 import { booksAPI } from "../../api/books";
-import { rentalsAPI } from "../../api/rentals";
 import { useAuth } from "../../hooks/useAuth";
+import { useRentalCart } from "../../contexts/RentalCartContext";
 import type { Book, Category } from "../../types/book";
-import RentBookModal from "./components/RentBookModal";
 import { toast } from "react-toastify";
 
 const BookDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { addToCart } = useRentalCart();
     const [book, setBook] = useState<Book | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isRentModalOpen, setIsRentModalOpen] = useState(false);
 
     useEffect(() => {
         const loadBookDetails = async () => {
@@ -43,23 +42,9 @@ const BookDetails: React.FC = () => {
         loadBookDetails();
     }, [id]);
 
-    const handleRentBook = async (rentalData: { rental_date: string; expected_return_date: string }) => {
+    const handleRentBook = () => {
         if (!user || !book) return;
-
-        try {
-            await rentalsAPI.rentBook(
-                book.id,
-                user.id.toString(),
-                rentalData.rental_date,
-                rentalData.expected_return_date
-            );
-            toast.success("Livre loué avec succès !");
-            setIsRentModalOpen(false);
-            navigate("/books/rented");
-        } catch (error) {
-            console.error("Erreur lors de la location:", error);
-            toast.error("Erreur lors de la location du livre");
-        }
+        addToCart(book);
     };
 
     const getStatusText = (status: Book["status"]) => {
@@ -86,7 +71,7 @@ const BookDetails: React.FC = () => {
 
     if (!book) {
         return (
-            <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+            <div className="w-full h-full flex flex-col gap-4 rounded-lg">
                 <PageHeader
                     title="Livre non trouvé"
                     subtitle="Ce livre n'existe pas ou a été supprimé"
@@ -104,7 +89,7 @@ const BookDetails: React.FC = () => {
     const canRent = user && !isOwner && book.status === "available";
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+        <div className="w-full h-full flex flex-col gap-4 rounded-lg">
             <Button
                 variant="ghost"
                 onClick={() => navigate(-1)}
@@ -217,7 +202,7 @@ const BookDetails: React.FC = () => {
                         <div className="flex flex-col sm:flex-row gap-4">
                             {canRent && (
                                 <Button
-                                    onClick={() => setIsRentModalOpen(true)}
+                                    onClick={handleRentBook}
                                     className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all"
                                 >
                                     <BookOpen className="w-4 h-4 mr-2" />
@@ -249,13 +234,6 @@ const BookDetails: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            <RentBookModal
-                book={book}
-                isOpen={isRentModalOpen}
-                onClose={() => setIsRentModalOpen(false)}
-                onConfirm={handleRentBook}
-            />
         </div>
     );
 };

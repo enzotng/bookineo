@@ -1,24 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Search, Filter, BookOpen, Tag } from "lucide-react";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Button,
-    Badge,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Spinner,
-} from "../../components/ui";
+import { Plus, Search, BookOpen, Tag } from "lucide-react";
+import { Card, CardContent, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Spinner } from "../../components/ui";
 import { booksAPI } from "../../api/books";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +8,7 @@ import { BookCard } from "../../components/books";
 import { FilterPanel } from "../../components/filters";
 import { PageHeader } from "../../components/layout";
 import type { FilterConfig } from "../../components/filters";
-import type { Book, Category, BookFilters } from "../../types/book";
+import type { Book, Category } from "../../types/book";
 import { toast } from "react-toastify";
 import BookForm from "./components/BookForm";
 import BookDetails from "./components/BookDetails";
@@ -136,23 +118,14 @@ const MyBooks: React.FC = () => {
         const variants = {
             available: "default",
             rented: "secondary",
-            unavailable: "destructive"
+            unavailable: "destructive",
         };
         return variants[status] || "outline";
     };
 
-    const getStatusText = (status: Book["status"]) => {
-        const texts = {
-            available: "Disponible",
-            rented: "Loué",
-            unavailable: "Indisponible"
-        };
-        return texts[status] || status;
-    };
-
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return "Non catégorisé";
-        return categories.find(c => c.id === categoryId)?.name || "Non catégorisé";
+        return categories.find((c) => c.id === categoryId)?.name || "Non catégorisé";
     };
 
     const resetFilters = () => {
@@ -167,36 +140,33 @@ const MyBooks: React.FC = () => {
 
     const filterConfigs: FilterConfig[] = [
         {
-            key: 'title',
-            type: 'search',
-            label: 'Recherche',
+            key: "title",
+            type: "search",
+            label: "Recherche",
             icon: Search,
-            placeholder: 'Rechercher par titre...'
+            placeholder: "Rechercher par titre...",
         },
         {
-            key: 'category_id',
-            type: 'select',
-            label: 'Catégorie',
+            key: "category_id",
+            type: "select",
+            label: "Catégorie",
             icon: Tag,
-            placeholder: 'Catégorie',
-            options: [
-                { value: 'all', label: 'Toutes les catégories' },
-                ...categories.map(cat => ({ value: cat.id.toString(), label: cat.name }))
-            ]
+            placeholder: "Catégorie",
+            options: [{ value: "all", label: "Toutes les catégories" }, ...categories.map((cat) => ({ value: cat.id.toString(), label: cat.name }))],
         },
         {
-            key: 'status',
-            type: 'select',
-            label: 'Statut',
+            key: "status",
+            type: "select",
+            label: "Statut",
             icon: BookOpen,
-            placeholder: 'Statut',
+            placeholder: "Statut",
             options: [
-                { value: 'all', label: 'Tous les statuts' },
-                { value: 'available', label: 'Disponible', icon: <div className="w-2 h-2 bg-emerald-500 rounded-full"></div> },
-                { value: 'rented', label: 'Loué', icon: <div className="w-2 h-2 bg-red-500 rounded-full"></div> },
-                { value: 'unavailable', label: 'Indisponible', icon: <div className="w-2 h-2 bg-gray-500 rounded-full"></div> }
-            ]
-        }
+                { value: "all", label: "Tous les statuts" },
+                { value: "available", label: "Disponible", icon: <div className="w-2 h-2 bg-emerald-500 rounded-full"></div> },
+                { value: "rented", label: "Loué", icon: <div className="w-2 h-2 bg-red-500 rounded-full"></div> },
+                { value: "unavailable", label: "Indisponible", icon: <div className="w-2 h-2 bg-gray-500 rounded-full"></div> },
+            ],
+        },
     ];
 
     if (loading && books.length === 0) {
@@ -208,10 +178,10 @@ const MyBooks: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+        <div className="w-full h-full flex flex-col gap-4 rounded-lg">
             <PageHeader
                 title="Mes livres"
-                subtitle={`Gérez votre collection de ${totalBooks} livre${totalBooks !== 1 ? 's' : ''}`}
+                subtitle={`Gérez votre collection de ${totalBooks} livre${totalBooks !== 1 ? "s" : ""}`}
                 icon={BookOpen}
                 actions={
                     <Button onClick={() => setIsAddModalOpen(true)} className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all">
@@ -223,7 +193,7 @@ const MyBooks: React.FC = () => {
 
             <FilterPanel
                 title="Filtres"
-                subtitle={`Gérez vos ${totalBooks} livre${totalBooks !== 1 ? 's' : ''}`}
+                subtitle={`Gérez vos ${totalBooks} livre${totalBooks !== 1 ? "s" : ""}`}
                 filters={uiFilters}
                 onFiltersChange={handleFiltersChange}
                 filterConfigs={filterConfigs}
@@ -236,11 +206,11 @@ const MyBooks: React.FC = () => {
                         <BookOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun livre trouvé</h3>
                         <p className="text-gray-600 mb-4">
-                            {Object.values(uiFilters).some(v => v && v !== "all")
+                            {Object.values(uiFilters).some((v) => v && v !== "all")
                                 ? "Aucun livre ne correspond à vos critères de recherche."
                                 : "Vous n'avez pas encore ajouté de livres à votre collection."}
                         </p>
-                        {!Object.values(uiFilters).some(v => v && v !== "all") && (
+                        {!Object.values(uiFilters).some((v) => v && v !== "all") && (
                             <Button onClick={() => setIsAddModalOpen(true)}>
                                 <Plus className="w-4 h-4 mr-2" />
                                 Ajouter mon premier livre
@@ -261,13 +231,13 @@ const MyBooks: React.FC = () => {
                                     onClick: (book) => {
                                         setSelectedBook(book);
                                         setIsEditModalOpen(true);
-                                    }
+                                    },
                                 }}
                                 deleteAction={{
                                     onClick: (book) => {
                                         setSelectedBook(book);
                                         setIsDeleteModalOpen(true);
-                                    }
+                                    },
                                 }}
                             />
                         ))}
@@ -275,11 +245,7 @@ const MyBooks: React.FC = () => {
 
                     {totalPages > 1 && (
                         <div className="flex justify-center">
-                            <BookPagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                            />
+                            <BookPagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                         </div>
                     )}
                 </>
@@ -289,15 +255,9 @@ const MyBooks: React.FC = () => {
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Ajouter un nouveau livre</DialogTitle>
-                        <DialogDescription>
-                            Ajoutez un livre à votre collection personnelle.
-                        </DialogDescription>
+                        <DialogDescription>Ajoutez un livre à votre collection personnelle.</DialogDescription>
                     </DialogHeader>
-                    <BookForm
-                        categories={categories}
-                        onSubmit={handleCreateBook}
-                        onCancel={() => setIsAddModalOpen(false)}
-                    />
+                    <BookForm categories={categories} onSubmit={handleCreateBook} onCancel={() => setIsAddModalOpen(false)} />
                 </DialogContent>
             </Dialog>
 
@@ -305,9 +265,7 @@ const MyBooks: React.FC = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Modifier le livre</DialogTitle>
-                        <DialogDescription>
-                            Modifiez les informations de votre livre.
-                        </DialogDescription>
+                        <DialogDescription>Modifiez les informations de votre livre.</DialogDescription>
                     </DialogHeader>
                     <BookForm
                         categories={categories}

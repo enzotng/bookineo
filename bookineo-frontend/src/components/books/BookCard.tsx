@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, Badge } from "../ui";
 import { BookOpen, Edit, Trash2 } from "lucide-react";
 import { ContactOwnerButton } from "../messaging";
 import { useAuth } from "../../hooks/useAuth";
-import { rentalsAPI } from "../../api/rentals";
-import RentBookModal from "../../pages/books/components/RentBookModal";
+import { useRentalCart } from "../../contexts/RentalCartContext";
 import { toast } from "react-toastify";
 import type { Book } from "../../types/book";
 
@@ -31,45 +30,16 @@ interface BookCardProps {
     onRentalSuccess?: () => void;
 }
 
-export const BookCard: React.FC<BookCardProps> = ({
-    book,
-    onBookClick,
-    editAction,
-    deleteAction,
-    primaryAction,
-    getCategoryName,
-    overlays,
-    showActions = true,
-    onRentalSuccess
-}) => {
+export const BookCard: React.FC<BookCardProps> = ({ book, onBookClick, editAction, deleteAction, primaryAction, getCategoryName, overlays, showActions = true, onRentalSuccess }) => {
     const { user } = useAuth();
-    const [isRentModalOpen, setIsRentModalOpen] = useState(false);
+    const { addToCart } = useRentalCart();
+
     const handleRentBook = () => {
         if (!user) {
             toast.error("Vous devez être connecté pour louer un livre");
             return;
         }
-        setIsRentModalOpen(true);
-    };
-
-    const handleRentConfirm = async (rentalData: { rental_date: string; expected_return_date: string }) => {
-        if (!user) return;
-
-        try {
-            await rentalsAPI.rentBook(
-                book.id,
-                user.id.toString(),
-                rentalData.rental_date,
-                rentalData.expected_return_date
-            );
-
-            toast.success("Livre loué avec succès !");
-            setIsRentModalOpen(false);
-            onRentalSuccess?.();
-        } catch (error) {
-            console.error("Erreur lors de la location:", error);
-            toast.error("Erreur lors de la location du livre");
-        }
+        addToCart(book);
     };
 
     const getStatusText = (status: Book["status"]) => {
@@ -85,21 +55,43 @@ export const BookCard: React.FC<BookCardProps> = ({
         }
     };
 
+    const getStatusBgColor = () => {
+        switch (book.status) {
+            case "available":
+                return "bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100";
+            case "rented":
+                return "bg-gradient-to-br from-red-50 via-red-50 to-red-100";
+            case "unavailable":
+                return "bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100";
+            default:
+                return "bg-gradient-to-br from-white via-gray-50 to-gray-100";
+        }
+    };
+
+    const getStatusBorderColor = () => {
+        switch (book.status) {
+            case "available":
+                return "border-emerald-200/50";
+            case "rented":
+                return "border-red-200/50";
+            case "unavailable":
+                return "border-gray-200/50";
+            default:
+                return "border-white/50";
+        }
+    };
+
     return (
         <div className="group cursor-pointer h-full">
-            <div className="relative bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl p-1 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:rotate-1 backdrop-blur-sm border border-white/50 h-full">
-                <div className="relative bg-white rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
+            <div className={`relative ${getStatusBgColor()} rounded-2xl p-1 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:rotate-1 backdrop-blur-sm border ${getStatusBorderColor()} h-full`}>
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-80"></div>
 
-                    {overlays?.topRight && (
-                        <div className="absolute top-2 right-2 z-20">
-                            {overlays.topRight}
-                        </div>
-                    )}
+                    {overlays?.topRight && <div className="absolute top-2 right-2 z-20">{overlays.topRight}</div>}
 
                     <div className="p-4 flex flex-col h-full">
                         <div className="h-48 min-h-[12rem] mb-4 relative group-hover:scale-[1.02] transition-transform duration-300">
-                            {book.image_url && book.image_url.startsWith('http') ? (
+                            {book.image_url && book.image_url.startsWith("http") ? (
                                 <div className="relative w-full h-full">
                                     <img src={book.image_url} alt={book.title} className="w-full h-full object-cover rounded-xl shadow-md" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-xl"></div>
@@ -138,7 +130,9 @@ export const BookCard: React.FC<BookCardProps> = ({
 
                                 <div className="flex items-center justify-between mt-2">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-3 h-3 rounded-full ${book.status === "available" ? "bg-emerald-400" : book.status === "rented" ? "bg-red-400" : "bg-gray-400"} shadow-sm`}></div>
+                                        <div
+                                            className={`w-3 h-3 rounded-full ${book.status === "available" ? "bg-emerald-400" : book.status === "rented" ? "bg-red-400" : "bg-gray-400"} shadow-sm`}
+                                        ></div>
                                         <span className={`text-sm font-medium ${book.status === "available" ? "text-emerald-700" : book.status === "rented" ? "text-red-700" : "text-gray-700"}`}>
                                             {getStatusText(book.status)}
                                         </span>
@@ -150,8 +144,8 @@ export const BookCard: React.FC<BookCardProps> = ({
                             </div>
 
                             <div className="flex flex-col gap-2 mt-auto pt-4">
-                                {showActions && (
-                                    book.status !== "available" ? (
+                                {showActions &&
+                                    (book.status !== "available" ? (
                                         <ContactOwnerButton
                                             book={book}
                                             ownerName={`${book.first_name || ""} ${book.last_name || ""}`.trim() || "Propriétaire"}
@@ -176,15 +170,25 @@ export const BookCard: React.FC<BookCardProps> = ({
                                                 showAlways={true}
                                             />
                                         </div>
-                                    )
+                                    ))}
+
+                                {primaryAction && (
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold hover:from-blue-600 hover:to-purple-700"
+                                        onClick={primaryAction.onClick}
+                                    >
+                                        {primaryAction.label}
+                                    </Button>
                                 )}
 
                                 <div className="flex gap-2">
                                     {editAction && (
                                         <Button
-                                            variant="outline"
+                                            variant="default"
                                             size="sm"
-                                            className="flex-1 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-all font-medium shadow-sm"
+                                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all font-semibold"
                                             onClick={() => editAction.onClick(book)}
                                         >
                                             <Edit className="w-4 h-4 mr-2" />
@@ -194,7 +198,7 @@ export const BookCard: React.FC<BookCardProps> = ({
 
                                     {deleteAction && (
                                         <Button
-                                            variant="outline"
+                                            variant="default"
                                             size="sm"
                                             className="flex-1 bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-300 transition-all font-medium shadow-sm"
                                             onClick={() => deleteAction.onClick(book)}
@@ -207,21 +211,10 @@ export const BookCard: React.FC<BookCardProps> = ({
                             </div>
                         </div>
 
-                        {overlays?.bottomOverlay && (
-                            <div className="mt-2">
-                                {overlays.bottomOverlay}
-                            </div>
-                        )}
+                        {overlays?.bottomOverlay && <div className="mt-2">{overlays.bottomOverlay}</div>}
                     </div>
                 </div>
             </div>
-
-            <RentBookModal
-                book={book}
-                isOpen={isRentModalOpen}
-                onClose={() => setIsRentModalOpen(false)}
-                onConfirm={handleRentConfirm}
-            />
         </div>
     );
 };

@@ -32,7 +32,7 @@ import type { FilterConfig } from "../../components/filters";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Search, BookOpen, Clock, Download } from "lucide-react";
+import { Search, BookOpen, Clock, Download, Euro } from "lucide-react";
 const Books: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -43,6 +43,7 @@ const Books: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [filters, setFilters] = useState<BookFilters>({ page: 1, limit: 12 });
     const [uiFilters, setUiFilters] = useState<Record<string, any>>({});
+    const [allAuthors, setAllAuthors] = useState<string[]>([]);
 
     const loadBooksAndCategories = async (currentFilters?: BookFilters) => {
         try {
@@ -54,6 +55,10 @@ const Books: React.FC = () => {
             setBooks(booksResponse.books);
             setPagination(booksResponse.pagination);
             setCategories(fetchedCategories);
+
+            // Extract unique authors for autocomplete
+            const authors = [...new Set(booksResponse.books.map(book => book.author).filter(Boolean))];
+            setAllAuthors(authors);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erreur lors du chargement");
         } finally {
@@ -73,6 +78,8 @@ const Books: React.FC = () => {
             author: newUiFilters.author || undefined,
             category_id: newUiFilters.category_id ? parseInt(newUiFilters.category_id) : undefined,
             status: newUiFilters.status || undefined,
+            min_price: newUiFilters.price?.min || undefined,
+            max_price: newUiFilters.price?.max || undefined,
             page: 1,
         };
         setFilters(newFilters);
@@ -91,7 +98,6 @@ const Books: React.FC = () => {
         setFilters(newFilters);
         loadBooksAndCategories(newFilters);
     };
-
 
     const getCategoryName = (categoryId?: number) => {
         if (!categoryId) return "Non catégorisé";
@@ -165,10 +171,11 @@ const Books: React.FC = () => {
         },
         {
             key: "author",
-            type: "text",
+            type: "autocomplete",
             label: "Auteur",
             icon: BookOpen,
             placeholder: "Rechercher par auteur...",
+            suggestions: allAuthors,
         },
         {
             key: "category_id",
@@ -189,6 +196,17 @@ const Books: React.FC = () => {
                 { value: "rented", label: "Loué", icon: <div className="w-2 h-2 bg-red-500 rounded-full"></div> },
                 { value: "unavailable", label: "Indisponible", icon: <div className="w-2 h-2 bg-gray-500 rounded-full"></div> },
             ],
+        },
+        {
+            key: "price",
+            type: "range",
+            label: "Prix par jour",
+            icon: Euro,
+            placeholder: "Fourchette de prix",
+            min: 0,
+            max: 100,
+            step: 0.5,
+            unit: "€",
         },
     ];
 
@@ -212,7 +230,7 @@ const Books: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+        <div className="w-full h-full flex flex-col gap-4 rounded-lg">
             <PageHeader
                 title="Catalogue des livres"
                 subtitle="Découvrez et louez des livres"
@@ -273,75 +291,73 @@ const Books: React.FC = () => {
             )}
 
             {pagination && pagination.totalPages > 1 && (
-                <div className="mt-8">
-                    <Pagination>
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    onClick={() => pagination.hasPreviousPage && handlePageChange(pagination.currentPage - 1)}
-                                    className={!pagination.hasPreviousPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                />
-                            </PaginationItem>
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious
+                                onClick={() => pagination.hasPreviousPage && handlePageChange(pagination.currentPage - 1)}
+                                className={!pagination.hasPreviousPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                        </PaginationItem>
 
-                            {pagination.totalPages <= 7 ? (
-                                Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                                    <PaginationItem key={pageNumber}>
-                                        <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
-                                            {pageNumber}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ))
-                            ) : (
-                                <>
+                        {pagination.totalPages <= 7 ? (
+                            Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                <PaginationItem key={pageNumber}>
+                                    <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
+                                        {pageNumber}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))
+                        ) : (
+                            <>
+                                <PaginationItem>
+                                    <PaginationLink onClick={() => handlePageChange(1)} isActive={pagination.currentPage === 1} className="cursor-pointer">
+                                        1
+                                    </PaginationLink>
+                                </PaginationItem>
+
+                                {pagination.currentPage > 3 && (
                                     <PaginationItem>
-                                        <PaginationLink onClick={() => handlePageChange(1)} isActive={pagination.currentPage === 1} className="cursor-pointer">
-                                            1
-                                        </PaginationLink>
+                                        <PaginationEllipsis />
                                     </PaginationItem>
+                                )}
 
-                                    {pagination.currentPage > 3 && (
-                                        <PaginationItem>
-                                            <PaginationEllipsis />
-                                        </PaginationItem>
-                                    )}
+                                {Array.from({ length: 3 }, (_, i) => {
+                                    const pageNumber = pagination.currentPage - 1 + i;
+                                    if (pageNumber > 1 && pageNumber < pagination.totalPages) {
+                                        return (
+                                            <PaginationItem key={pageNumber}>
+                                                <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
+                                                    {pageNumber}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        );
+                                    }
+                                    return null;
+                                })}
 
-                                    {Array.from({ length: 3 }, (_, i) => {
-                                        const pageNumber = pagination.currentPage - 1 + i;
-                                        if (pageNumber > 1 && pageNumber < pagination.totalPages) {
-                                            return (
-                                                <PaginationItem key={pageNumber}>
-                                                    <PaginationLink onClick={() => handlePageChange(pageNumber)} isActive={pageNumber === pagination.currentPage} className="cursor-pointer">
-                                                        {pageNumber}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            );
-                                        }
-                                        return null;
-                                    })}
-
-                                    {pagination.currentPage < pagination.totalPages - 2 && (
-                                        <PaginationItem>
-                                            <PaginationEllipsis />
-                                        </PaginationItem>
-                                    )}
-
+                                {pagination.currentPage < pagination.totalPages - 2 && (
                                     <PaginationItem>
-                                        <PaginationLink onClick={() => handlePageChange(pagination.totalPages)} isActive={pagination.currentPage === pagination.totalPages} className="cursor-pointer">
-                                            {pagination.totalPages}
-                                        </PaginationLink>
+                                        <PaginationEllipsis />
                                     </PaginationItem>
-                                </>
-                            )}
+                                )}
 
-                            <PaginationItem>
-                                <PaginationNext
-                                    onClick={() => pagination.hasNextPage && handlePageChange(pagination.currentPage + 1)}
-                                    className={!pagination.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
-                </div>
+                                <PaginationItem>
+                                    <PaginationLink onClick={() => handlePageChange(pagination.totalPages)} isActive={pagination.currentPage === pagination.totalPages} className="cursor-pointer">
+                                        {pagination.totalPages}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            </>
+                        )}
+
+                        <PaginationItem>
+                            <PaginationNext
+                                onClick={() => pagination.hasNextPage && handlePageChange(pagination.currentPage + 1)}
+                                className={!pagination.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             )}
         </div>
     );

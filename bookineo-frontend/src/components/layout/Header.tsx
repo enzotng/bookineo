@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, Input } from "../ui";
-import { Bell, Search, MessageCircle, Filter, X, BookOpen, User, Tag, Calendar, SlidersHorizontal } from "lucide-react";
+import { Bell, Search, MessageCircle, Filter, X, BookOpen, User, Tag, Calendar, SlidersHorizontal, ShoppingCart, Edit, Trash2 } from "lucide-react";
 import { useMessages } from "../../hooks/useMessages";
+import { useRentalCart } from "../../contexts/RentalCartContext";
 import { useNavigate } from "react-router-dom";
 import { booksAPI } from "../../api/books";
 import type { Book, Category } from "../../types/book";
 
 export const Header: React.FC = () => {
     const { unreadCount } = useMessages();
+    const { cart, removeFromCart } = useRentalCart();
     const navigate = useNavigate();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Book[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const [filters, setFilters] = useState({
@@ -43,7 +44,6 @@ export const Header: React.FC = () => {
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setIsSearchOpen(false);
-                setIsAdvancedOpen(false);
             }
         };
 
@@ -52,35 +52,85 @@ export const Header: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const abortController = new AbortController();
+
         const searchBooks = async () => {
             if (!searchQuery.trim() && !filters.author && filters.category === "all" && filters.status === "all" && !filters.minYear && !filters.maxYear) {
                 setSearchResults([]);
                 return;
             }
 
+            if (searchQuery.trim() && searchQuery.trim().length < 2) {
+                return;
+            }
+
             try {
                 setLoading(true);
-                const searchFilters = {
-                    title: searchQuery.trim() || undefined,
-                    author: filters.author || undefined,
+                const searchQuery_trim = searchQuery.trim();
+                const baseFilters = {
                     category_id: filters.category !== "all" && filters.category ? parseInt(filters.category) : undefined,
                     status: (filters.status !== "all" && filters.status) || undefined,
-                    limit: 8,
+                    limit: 2,
                 };
 
-                const { booksResponse } = await booksAPI.getBooksAndCategories(searchFilters);
-                setSearchResults(booksResponse.books);
-                setIsSearchOpen(true);
+                let allResults: Book[] = [];
+
+                if (searchQuery_trim) {
+                    const [titleResponse, authorResponse, isbnResponse] = await Promise.all([
+                        booksAPI.getBooks({ ...baseFilters, title: searchQuery_trim }),
+                        booksAPI.getBooks({ ...baseFilters, author: searchQuery_trim }),
+                        booksAPI.getBooks({ ...baseFilters, isbn: searchQuery_trim })
+                    ]);
+
+                    const titleResults = titleResponse.books || [];
+                    const authorResults = authorResponse.books || [];
+                    const isbnResults = isbnResponse.books || [];
+
+                    const combinedResults = [...titleResults];
+
+                    authorResults.forEach(book => {
+                        if (!combinedResults.find(existing => existing.id === book.id)) {
+                            combinedResults.push(book);
+                        }
+                    });
+
+                    isbnResults.forEach(book => {
+                        if (!combinedResults.find(existing => existing.id === book.id)) {
+                            combinedResults.push(book);
+                        }
+                    });
+
+                    allResults = combinedResults.slice(0, 6);
+                } else if (filters.author) {
+                    const booksResponse = await booksAPI.getBooks({ ...baseFilters, author: filters.author, limit: 6 });
+                    allResults = booksResponse.books;
+                } else {
+                    const booksResponse = await booksAPI.getBooks({ ...baseFilters, limit: 6 });
+                    allResults = booksResponse.books;
+                }
+
+                if (!abortController.signal.aborted) {
+                    setSearchResults(allResults);
+                    setIsSearchOpen(true);
+                }
             } catch (error) {
-                console.error("Search error:", error);
-                setSearchResults([]);
+                if (!abortController.signal.aborted) {
+                    console.error("Search error:", error);
+                    setSearchResults([]);
+                }
             } finally {
-                setLoading(false);
+                if (!abortController.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
-        const debounceTimer = setTimeout(searchBooks, 300);
-        return () => clearTimeout(debounceTimer);
+        const debounceTimer = setTimeout(searchBooks, 500);
+
+        return () => {
+            clearTimeout(debounceTimer);
+            abortController.abort();
+        };
     }, [searchQuery, filters]);
 
     const handleBookClick = (book: Book) => {
@@ -100,7 +150,6 @@ export const Header: React.FC = () => {
         });
         setSearchResults([]);
         setIsSearchOpen(false);
-        setIsAdvancedOpen(false);
     };
 
     const getCategoryName = (categoryId?: number) => {
@@ -122,7 +171,7 @@ export const Header: React.FC = () => {
     };
 
     return (
-        <header className="border-b bg-white backdrop-blur-lg px-6 h-16 flex items-center justify-between sticky top-0 z-50">
+        <header className="border-b bg-white backdrop-blur-lg px-6 h-16 flex items-center justify-between fixed top-0 left-64 right-0 z-50">
             <div className="flex-1 max-w-3xl" ref={searchRef}>
                 <div className="relative">
                     <div className="flex gap-2">
@@ -136,7 +185,7 @@ export const Header: React.FC = () => {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Rechercher des livres, auteurs..."
+                                placeholder="Rechercher par titre, auteur, ISBN..."
                                 className="w-full pl-10 pr-10 py-2.5 bg-white/80 backdrop-blur transition-all duration-200 hover:bg-white/90 focus:bg-white focus:shadow-lg placeholder:transition-all placeholder:duration-200 group-hover:placeholder:text-gray-500"
                                 onFocus={() => {
                                     if (searchResults.length > 0 || searchQuery) {
@@ -154,18 +203,14 @@ export const Header: React.FC = () => {
                             )}
                         </div>
 
-                        <DropdownMenu open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+                        <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="default"
-                                    className={`px-3 py-2.5 border-gray-200 hover:bg-gray-50 transition-all duration-200 ${isAdvancedOpen ? "bg-blue-50 border-blue-200 text-blue-600" : ""}`}
-                                >
-                                    <SlidersHorizontal className={`w-4 h-4 transition-transform duration-200 ${isAdvancedOpen ? "rotate-180" : ""}`} />
+                                <Button variant="outline" size="default">
+                                    <SlidersHorizontal className={`w-4 h-4 transition-transform duration-200`} />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[720px] p-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200" align="end" side="bottom">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <DropdownMenuContent className="w-[720px] rounded-xl p-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200" align="end" side="bottom">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Auteur</label>
                                         <Input
@@ -173,14 +218,14 @@ export const Header: React.FC = () => {
                                             value={filters.author}
                                             onChange={(e) => setFilters((prev) => ({ ...prev, author: e.target.value }))}
                                             placeholder="Nom de l'auteur"
-                                            className="h-9 text-sm transition-all duration-150"
+                                            className="h-9 text-sm transition-all duration-150 w-full"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Catégorie</label>
                                         <Select value={filters.category} onValueChange={(value) => setFilters((prev) => ({ ...prev, category: value }))}>
-                                            <SelectTrigger className="h-9 text-sm transition-all duration-150">
+                                            <SelectTrigger className="h-9 text-sm transition-all duration-150 w-full">
                                                 <SelectValue placeholder="Toutes" />
                                             </SelectTrigger>
                                             <SelectContent className="animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-150">
@@ -197,7 +242,7 @@ export const Header: React.FC = () => {
                                     <div className="space-y-2">
                                         <label className="block text-xs font-medium text-gray-700">Statut</label>
                                         <Select value={filters.status} onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}>
-                                            <SelectTrigger className="h-9 text-sm transition-all duration-150">
+                                            <SelectTrigger className="h-9 text-sm transition-all duration-150 w-full">
                                                 <SelectValue placeholder="Tous" />
                                             </SelectTrigger>
                                             <SelectContent className="animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-150">
@@ -231,7 +276,7 @@ export const Header: React.FC = () => {
                                             value={filters.minYear}
                                             onChange={(e) => setFilters((prev) => ({ ...prev, minYear: e.target.value }))}
                                             placeholder="1900"
-                                            className="h-9 text-sm transition-all duration-150"
+                                            className="h-9 text-sm transition-all duration-150 w-full"
                                         />
                                     </div>
 
@@ -345,6 +390,79 @@ export const Header: React.FC = () => {
                         )}
                     </Button>
                 </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="relative">
+                            <Button variant="ghost" size="sm" className="border border-gray-200 rounded-lg hover:bg-gray-100">
+                                <ShoppingCart className="h-5 w-5" />
+                                {cart.total_items > 0 && (
+                                    <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                        {cart.total_items > 99 ? "99+" : cart.total_items}
+                                    </Badge>
+                                )}
+                            </Button>
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-80 p-0" align="end" side="bottom">
+                        <div className="p-4 border-b">
+                            <h3 className="font-semibold text-lg">Panier de location</h3>
+                            <p className="text-sm text-gray-600">
+                                {cart.total_items} livre{cart.total_items !== 1 ? "s" : ""}
+                            </p>
+                        </div>
+                        {cart.total_items === 0 ? (
+                            <div className="p-6 text-center text-gray-500">
+                                <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                <p>Votre panier est vide</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="max-h-80 overflow-y-auto">
+                                    {cart.items.map((item) => (
+                                        <div key={item.book.id} className="p-3 border-b hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-12 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    {item.book.image_url ? (
+                                                        <img src={item.book.image_url} alt={item.book.title} className="w-full h-full object-cover rounded-lg" />
+                                                    ) : (
+                                                        <BookOpen className="w-6 h-6 text-blue-500" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-medium text-gray-900 truncate text-sm">{item.book.title}</h4>
+                                                    <p className="text-xs text-gray-600 truncate">{item.book.author}</p>
+                                                    <div className="flex items-center justify-between mt-1">
+                                                        <span className="text-xs text-gray-600">
+                                                            {item.duration_days > 0 ? `${item.duration_days} jour${item.duration_days !== 1 ? "s" : ""}` : "Non configuré"}
+                                                        </span>
+                                                        <span className="text-sm font-semibold text-gray-900">{item.total_price > 0 ? `${item.total_price.toFixed(2)}€` : "--"}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-blue-100" onClick={() => navigate("/rental-cart")}>
+                                                        <Edit className="h-3 w-3 text-blue-600" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-red-100" onClick={() => removeFromCart(item.book.id)}>
+                                                        <Trash2 className="h-3 w-3 text-red-600" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="p-4 bg-gray-50 border-t">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="font-medium">Total</span>
+                                        <span className="text-lg font-bold text-blue-600">{cart.total_amount.toFixed(2)}€</span>
+                                    </div>
+                                    <Button onClick={() => navigate("/rental-cart")} className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                        Voir le panier
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

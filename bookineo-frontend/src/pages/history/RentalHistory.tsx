@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { History, Search, Filter, Calendar, User, BookOpen, Download, Clock } from "lucide-react";
 import {
     Card,
@@ -11,8 +11,10 @@ import {
     SelectTrigger,
     SelectValue,
     Spinner,
-    Input
+    Input,
+    DataTable
 } from "../../components/ui";
+import type { ColumnDef } from "@tanstack/react-table";
 import { rentalsAPI, type Rental } from "../../api/rentals";
 import { booksAPI } from "../../api/books";
 import { useAuth } from "../../hooks/useAuth";
@@ -130,6 +132,90 @@ const RentalHistory: React.FC = () => {
         return categories.find(c => c.id === categoryId)?.name || "Non catégorisé";
     };
 
+    const columns: ColumnDef<Rental>[] = useMemo(
+        () => [
+            {
+                accessorKey: "book_title",
+                header: "Livre",
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            {row.original.book_image_url ? (
+                                <img
+                                    src={row.original.book_image_url}
+                                    alt={row.original.book_title}
+                                    className="w-full h-full object-cover rounded-lg"
+                                />
+                            ) : (
+                                <BookOpen className="w-5 h-5 text-blue-500" />
+                            )}
+                        </div>
+                        <div>
+                            <p className="font-semibold text-gray-900 max-w-[200px] truncate">{row.getValue("book_title") || "Titre inconnu"}</p>
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "book_author",
+                header: "Auteur",
+                cell: ({ row }) => <div className="text-gray-700 max-w-[150px] truncate">{row.getValue("book_author") || "Auteur inconnu"}</div>,
+            },
+            {
+                accessorKey: "category_id",
+                header: "Catégorie",
+                cell: ({ row }) => <div className="text-gray-700">{getCategoryName(row.getValue("category_id"))}</div>,
+            },
+            {
+                accessorKey: "rental_date",
+                header: "Date location",
+                cell: ({ row }) => <div className="text-gray-700">{formatDate(row.getValue("rental_date"))}</div>,
+            },
+            {
+                id: "return_date",
+                header: "Date retour",
+                cell: ({ row }) => {
+                    const isActive = row.original.status === 'active';
+                    const date = isActive ? row.original.expected_return_date : row.original.actual_return_date;
+                    return <div className="text-gray-700">{formatDate(date)}</div>;
+                },
+            },
+            {
+                id: "duration",
+                header: "Durée",
+                cell: ({ row }) => {
+                    const duration = calculateDuration(
+                        row.original.rental_date,
+                        row.original.actual_return_date || row.original.expected_return_date
+                    );
+                    return (
+                        <div className="flex items-center gap-1 text-gray-700">
+                            <Clock className="w-4 h-4" />
+                            {duration} jour{duration > 1 ? 's' : ''}
+                        </div>
+                    );
+                },
+            },
+            {
+                accessorKey: "status",
+                header: "Statut",
+                cell: ({ row }) => {
+                    const isActive = row.getValue("status") === 'active';
+                    return (
+                        <Badge className={`${
+                            isActive
+                                ? 'bg-blue-100 text-blue-800 border-blue-300'
+                                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        } shadow-sm`}>
+                            {isActive ? 'En cours' : 'Terminé'}
+                        </Badge>
+                    );
+                },
+            },
+        ],
+        [categories, formatDate, calculateDuration, getCategoryName]
+    );
+
     const exportToCsv = () => {
         const headers = [
             "Titre",
@@ -232,7 +318,7 @@ const RentalHistory: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-4 overflow-y-auto rounded-lg">
+        <div className="w-full h-full flex flex-col gap-4 rounded-lg">
             <PageHeader
                 title="Historique des locations"
                 subtitle={`${rentals.length} location${rentals.length !== 1 ? 's' : ''} au total`}
@@ -272,79 +358,11 @@ const RentalHistory: React.FC = () => {
                 </Card>
             ) : (
                 <>
-                    <Card className="bg-white rounded-2xl shadow-lg border border-gray-200">
-                        <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gradient-to-r from-gray-50 to-blue-50">
-                                        <tr>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livre</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auteur</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date location</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date retour</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durée</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {filteredRentals.map((rental, index) => {
-                                            const duration = calculateDuration(rental.rental_date, rental.actual_return_date || rental.expected_return_date);
-                                            const isActive = rental.status === 'active';
-
-                                            return (
-                                                <tr
-                                                    key={rental.id}
-                                                    className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 animate-in slide-in-from-left-2`}
-                                                    style={{ animationDelay: `${index * 50}ms` }}
-                                                >
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                                {rental.book_image_url ? (
-                                                                    <img
-                                                                        src={rental.book_image_url}
-                                                                        alt={rental.book_title}
-                                                                        className="w-full h-full object-cover rounded-lg"
-                                                                    />
-                                                                ) : (
-                                                                    <BookOpen className="w-5 h-5 text-blue-500" />
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-900">{rental.book_title || 'Titre inconnu'}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-700">{rental.book_author || 'Auteur inconnu'}</td>
-                                                    <td className="px-6 py-4 text-sm text-gray-700">{getCategoryName(rental.category_id)}</td>
-                                                    <td className="px-6 py-4 text-sm text-gray-700">{formatDate(rental.rental_date)}</td>
-                                                    <td className="px-6 py-4 text-sm text-gray-700">
-                                                        {isActive ? formatDate(rental.expected_return_date) : formatDate(rental.actual_return_date)}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-1 text-sm text-gray-700">
-                                                            <Clock className="w-4 h-4" />
-                                                            {duration} jour{duration > 1 ? 's' : ''}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <Badge className={`${
-                                                            isActive
-                                                                ? 'bg-blue-100 text-blue-800 border-blue-300'
-                                                                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                                        } shadow-sm`}>
-                                                            {isActive ? 'En cours' : 'Terminé'}
-                                                        </Badge>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <div className="w-full">
+                        <div className="rounded-xl border border-gray-200 overflow-x-auto">
+                            <DataTable columns={columns} data={filteredRentals} />
+                        </div>
+                    </div>
 
                     {totalPages > 1 && (
                         <div className="flex justify-center">

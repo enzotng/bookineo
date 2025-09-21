@@ -4,11 +4,16 @@ import { Filter, X, Search } from "lucide-react";
 
 export interface FilterConfig {
     key: string;
-    type: "text" | "select" | "search" | "date" | "checkbox";
+    type: "text" | "select" | "search" | "date" | "checkbox" | "autocomplete" | "range";
     label: string;
     icon?: React.ComponentType<{ className?: string }>;
     placeholder?: string;
     options?: { value: string; label: string; icon?: React.ReactNode }[];
+    suggestions?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string;
 }
 
 interface FilterPanelProps {
@@ -32,11 +37,24 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     onClearFilters,
     showFilterCount = true,
 }) => {
+    const [showSuggestions, setShowSuggestions] = React.useState<Record<string, boolean>>({});
+
     const handleFilterChange = (key: string, value: string | boolean | undefined) => {
         onFiltersChange({
             ...filters,
             [key]: value === "" || value === "all" ? undefined : value,
         });
+    };
+
+    const handleRangeChange = (key: string, type: "min" | "max", value: string) => {
+        const currentRange = filters[key] || {};
+        const newRange = { ...currentRange, [type]: value === "" ? undefined : Number(value) };
+
+        if (!newRange.min && !newRange.max) {
+            handleFilterChange(key, undefined);
+        } else {
+            handleFilterChange(key, newRange);
+        }
     };
 
     const clearFilters = () => {
@@ -64,8 +82,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         const { key, type, label, icon: Icon, placeholder, options } = config;
 
         return (
-            <div key={key} className="space-y-3">
-                <div className="flex items-center gap-2">
+            <div key={key} className="flex flex-col gap-2">
+                <div className="w-fit flex items-center gap-2">
                     {Icon && <Icon className="w-4 h-4 text-gray-500" />}
                     <Label className="text-sm font-medium text-gray-700">{label}</Label>
                 </div>
@@ -77,7 +95,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                             placeholder={placeholder}
                             value={filters[key] || ""}
                             onChange={(e) => handleFilterChange(key, e.target.value)}
-                            className="pl-10 rounded-xl border-gray-200 focus:border-blue-500 shadow-sm"
+                            className="pl-10 rounded-xl border-gray-200 focus:border-blue-500"
                         />
                     </div>
                 )}
@@ -87,13 +105,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         placeholder={placeholder}
                         value={filters[key] || ""}
                         onChange={(e) => handleFilterChange(key, e.target.value)}
-                        className="rounded-xl border-gray-200 focus:border-blue-500 shadow-sm"
+                        className="rounded-xl border-gray-200 focus:border-blue-500"
                     />
                 )}
 
                 {type === "select" && options && (
                     <Select value={filters[key] || "all"} onValueChange={(value) => handleFilterChange(key, value)}>
-                        <SelectTrigger className="rounded-xl border-gray-200 focus:border-blue-500 shadow-sm bg-white">
+                        <SelectTrigger className="rounded-xl border-gray-200 focus:border-blue-500 bg-white">
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-gray-200 shadow-xl">
@@ -119,7 +137,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         placeholder={placeholder}
                         value={filters[key] || ""}
                         onChange={(e) => handleFilterChange(key, e.target.value)}
-                        className="rounded-xl border-gray-200 focus:border-blue-500 shadow-sm"
+                        className="rounded-xl border-gray-200 focus:border-blue-500"
                     />
                 )}
 
@@ -135,6 +153,81 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         <label htmlFor={key} className="text-sm text-gray-700 cursor-pointer">
                             {placeholder || label}
                         </label>
+                    </div>
+                )}
+
+                {type === "autocomplete" && (
+                    <div className="relative">
+                        <Input
+                            placeholder={placeholder}
+                            value={filters[key] || ""}
+                            onChange={(e) => {
+                                handleFilterChange(key, e.target.value);
+                                setShowSuggestions((prev) => ({ ...prev, [key]: true }));
+                            }}
+                            onFocus={() => setShowSuggestions((prev) => ({ ...prev, [key]: true }))}
+                            onBlur={() => setTimeout(() => setShowSuggestions((prev) => ({ ...prev, [key]: false })), 150)}
+                            className="rounded-xl border-gray-200 focus:border-blue-500"
+                        />
+                        {showSuggestions[key] && config.suggestions && config.suggestions.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                {config.suggestions
+                                    .filter((suggestion) => !filters[key] || suggestion.toLowerCase().includes((filters[key] || "").toLowerCase()))
+                                    .slice(0, 8)
+                                    .map((suggestion, index) => (
+                                        <div
+                                            key={index}
+                                            onClick={() => {
+                                                handleFilterChange(key, suggestion);
+                                                setShowSuggestions((prev) => ({ ...prev, [key]: false }));
+                                            }}
+                                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm border-b last:border-b-0"
+                                        >
+                                            {suggestion}
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {type === "range" && (
+                    <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <Input
+                                    type="number"
+                                    placeholder={`Min ${config.unit || ""}`}
+                                    value={filters[key]?.min || ""}
+                                    onChange={(e) => handleRangeChange(key, "min", e.target.value)}
+                                    min={config.min}
+                                    max={config.max}
+                                    step={config.step}
+                                    className="rounded-xl border-gray-200 focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    type="number"
+                                    placeholder={`Max ${config.unit || ""}`}
+                                    value={filters[key]?.max || ""}
+                                    onChange={(e) => handleRangeChange(key, "max", e.target.value)}
+                                    min={config.min}
+                                    max={config.max}
+                                    step={config.step}
+                                    className="rounded-xl border-gray-200 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+                        {(filters[key]?.min || filters[key]?.max) && (
+                            <div className="text-xs text-gray-500">
+                                {filters[key]?.min && filters[key]?.max
+                                    ? `Entre ${filters[key].min} et ${filters[key].max} ${config.unit || ""}`
+                                    : filters[key]?.min
+                                    ? `À partir de ${filters[key].min} ${config.unit || ""}`
+                                    : `Jusqu'à ${filters[key].max} ${config.unit || ""}`}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

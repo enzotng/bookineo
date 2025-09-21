@@ -35,38 +35,33 @@ const menuItems = [
         href: "/books",
         icon: BookOpen,
     },
-    {
-        title: "Mes livres",
-        href: "/my-books",
-        icon: Book,
-    },
 ];
 
 const rentalItems = [
     {
-        title: "Louer un livre",
-        href: "/books",
+        title: "Panier de location",
+        href: "/rental-cart",
         icon: Plus,
-        description: "Trouver et louer des livres"
+        description: "Gérer votre panier et louer des livres",
     },
     {
         title: "Retourner un livre",
         href: "/return-book",
         icon: RotateCcw,
-        description: "Restituer vos livres loués"
+        description: "Restituer vos livres loués",
     },
     {
         title: "Mes livres loués",
         href: "/rented-books",
         icon: Bookmark,
-        description: "Vos locations en cours"
+        description: "Vos locations en cours",
     },
     {
         title: "Historique",
         href: "/history",
         icon: History,
-        description: "Toutes vos locations"
-    }
+        description: "Toutes vos locations",
+    },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
@@ -91,14 +86,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
         return `${user.first_name || ""} ${user.last_name || ""}`.trim();
     };
 
-    const isRentalActive = rentalItems.some(item => location.pathname === item.href);
+    const isRentalActive = rentalItems.some((item) => location.pathname === item.href);
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full">
-            <div className="flex items-center gap-2 p-4 h-16 border-b">
+            <Link to="/home" className="flex items-center gap-2 p-4 h-16 border-b hover:bg-blue-50 transition-colors">
                 <Book className="h-8 w-8 text-blue-600" />
                 <h1 className="text-xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Bookineo</h1>
-            </div>
+            </Link>
 
             <nav className="flex-1 px-4 py-4">
                 <ul className="space-y-2">
@@ -131,17 +126,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
                                 >
                                     <BookOpen className="h-4 w-4" />
                                     <span className="flex-1 text-left">Locations</span>
-                                    <ChevronDown className={`h-4 w-4 transition-transform ${isRentalDropdownOpen ? 'rotate-180' : ''}`} />
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${isRentalDropdownOpen ? "rotate-180" : ""}`} />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                className="w-64 ml-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
-                                align="start"
-                                side="right"
-                            >
-                                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wider">
-                                    Gestion des locations
-                                </DropdownMenuLabel>
+                            <DropdownMenuContent className="w-64 ml-4 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200" align="start" side="right">
+                                <DropdownMenuLabel className="text-xs text-gray-500 uppercase tracking-wider">Gestion des locations</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 {rentalItems.map((item) => {
                                     const Icon = item.icon;
@@ -154,19 +143,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
                                                 navigate(item.href);
                                                 setIsRentalDropdownOpen(false);
                                             }}
-                                            className={`cursor-pointer p-3 transition-colors hover:bg-blue-50 focus:bg-blue-50 ${
-                                                isActive ? 'bg-blue-50 border-l-2 border-blue-500' : ''
-                                            }`}
+                                            className={`cursor-pointer p-3 transition-colors hover:bg-blue-50 focus:bg-blue-50 ${isActive ? "bg-blue-50 border-l-2 border-blue-500" : ""}`}
                                         >
                                             <div className="flex items-start gap-3 w-full">
-                                                <Icon className={`h-4 w-4 mt-0.5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                                                <Icon className={`h-4 w-4 mt-0.5 ${isActive ? "text-blue-600" : "text-gray-500"}`} />
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm font-medium ${isActive ? 'text-blue-900' : 'text-gray-900'}`}>
-                                                        {item.title}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">
-                                                        {item.description}
-                                                    </p>
+                                                    <p className={`text-sm font-medium ${isActive ? "text-blue-900" : "text-gray-900"}`}>{item.title}</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
                                                 </div>
                                             </div>
                                         </DropdownMenuItem>
@@ -174,23 +157,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
                                 })}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    </li>
-
-                    <li>
-                        <Link
-                            to="/messages"
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-blue-50 hover:text-blue-700 ${
-                                location.pathname === "/messages" ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium" : "text-foreground"
-                            }`}
-                        >
-                            <MessageCircle className="h-4 w-4" />
-                            Messages
-                            {unreadCount > 0 && (
-                                <span className="ml-auto bg-blue-100 text-blue-800 border-blue-300 text-xs rounded-full px-2 py-0.5">
-                                    {unreadCount > 99 ? "99+" : unreadCount}
-                                </span>
-                            )}
-                        </Link>
                     </li>
                 </ul>
             </nav>
@@ -217,6 +183,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile = false }) => {
                         <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700">
                             <User className="mr-2 h-4 w-4" />
                             <span>Profil</span>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem onClick={() => navigate("/my-books")} className="cursor-pointer hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700">
+                            <Book className="mr-2 h-4 w-4" />
+                            <span>Mes livres</span>
                         </DropdownMenuItem>
 
                         <DropdownMenuItem onClick={() => navigate("/messages")} className="cursor-pointer hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700">

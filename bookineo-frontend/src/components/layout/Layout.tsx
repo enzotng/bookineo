@@ -19,7 +19,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex-1 flex flex-col md:ml-64">
                 <Header />
 
-                <main className="flex-1 p-6 max-h-[calc(100vh-4rem)]">{children}</main>
+                <main className="flex-1 p-6 min-h-[calc(100vh-4rem)] mt-16">{children}</main>
             </div>
         </div>
     );

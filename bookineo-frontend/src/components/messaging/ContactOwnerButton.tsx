@@ -16,15 +16,7 @@ interface ContactOwnerButtonProps {
     showAlways?: boolean;
 }
 
-export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
-    book,
-    ownerName,
-    ownerEmail,
-    className = "",
-    variant = "outline",
-    size = "sm",
-    showAlways = false,
-}) => {
+export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({ book, ownerName, ownerEmail, className = "", variant = "outline", size = "sm", showAlways = false }) => {
     const { user } = useAuth();
     const { sendMessage } = useMessages();
     const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -53,12 +45,7 @@ export const ContactOwnerButton: React.FC<ContactOwnerButtonProps> = ({
 
     return (
         <>
-            <Button
-                variant={variant}
-                size={size}
-                onClick={() => setIsComposerOpen(true)}
-                className={`flex items-center space-x-2 ${className}`}
-            >
+            <Button variant={variant} size={size} onClick={() => setIsComposerOpen(true)} className={`flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-none ${className}`}>
                 <MessageCircle className="w-4 h-4" />
                 <span>Contacter</span>
             </Button>
