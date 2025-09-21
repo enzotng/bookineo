@@ -5,6 +5,11 @@ import jwt from "jsonwebtoken";
 import { emailService } from "../services/emailService.ts";
 import type { User } from "../types/User.ts";
 
+function emptyToNull(v) {
+    if (v === undefined || v === null) return null;
+    if (typeof v === "string" && v.trim() === "") return null;
+    return v;
+}
 class UserController {
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -83,21 +88,30 @@ class UserController {
         }
     }
 
-    async updateProfile(req: any, res: Response): Promise<void> {
+    async updateProfile(req, res) {
         try {
-            const userId = req.user!.id;
-            const { first_name, last_name, birth_date } = req.body;
+            const userId = req.user.id;
+            const { first_name, last_name, birth_date, newsletter } = req.body;
 
-            const result = await query<User>(
+            const fn = emptyToNull(first_name);
+            const ln = emptyToNull(last_name);
+            const bd = emptyToNull(birth_date);
+            const nl = typeof newsletter === "boolean" ? newsletter : null;
+
+            const result = await query(
                 `UPDATE users
-                 SET first_name = $1, last_name = $2, birth_date = $3, updated_at = NOW()
-                 WHERE id = $4
-                 RETURNING id, email, first_name, last_name, birth_date`,
-                [first_name, last_name, birth_date, userId]
+       SET first_name = COALESCE($1, first_name),
+           last_name  = COALESCE($2, last_name),
+           birth_date = COALESCE($3, birth_date),
+           newsletter = COALESCE($4, newsletter),
+           updated_at = NOW()
+       WHERE id = $5
+       RETURNING id, email, first_name, last_name, birth_date, newsletter`,
+                [fn, ln, bd, nl, userId]
             );
 
             res.json(result.rows[0]);
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
